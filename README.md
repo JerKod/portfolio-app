@@ -30,4 +30,4 @@ Prometheus, Grafana)
 
 ## License
 
-[à décider — MIT est un choix courant pour un portfolio public]
+[MIT](./LICENSE) © 2026 JerKod
