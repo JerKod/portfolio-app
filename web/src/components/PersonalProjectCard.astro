@@ -1,0 +1,96 @@
+---
+import TechBadge from "./TechBadge.astro";
+import Glass from "./Glass.astro";
+import { resolveTechs } from "../data/technologies";
+import { formatProjectPeriod, type PersonalProject } from "../data/personalProjects";
+
+const { project } = Astro.props as { project: PersonalProject };
+---
+<Glass as="div" class="project-card">
+  <div class="project-header">
+    <h3>{project.name}</h3>
+    <span class="period">{formatProjectPeriod(project)}</span>
+  </div>
+  <p class="tagline">{project.tagline}</p>
+
+  <ul class="highlights">
+    {project.highlights.map((h) => <li>{h}</li>)}
+  </ul>
+
+  <div class="badge-row">
+    {resolveTechs(project.techIds).map((tech) => (
+      <TechBadge name={tech.icon} label={tech.label} />
+    ))}
+  </div>
+
+  <div class="links">
+    {project.caseStudyUrl && (
+      <a href={project.caseStudyUrl}>View technical details →</a>
+    )}
+    {project.repoUrl && (
+      <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Source code →</a>
+    )}
+  </div>
+</Glass>
+
+<style>
+  .project-card {
+    padding: 1.5rem;
+  }
+  .project-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .project-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    margin: 0;
+  }
+  .period {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-slate);
+  }
+  .tagline {
+    color: var(--color-slate);
+    max-width: 60ch;
+    margin: 0.5rem 0 1rem;
+  }
+  .highlights {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+  }
+  .highlights li {
+    position: relative;
+    padding-left: 1.1rem;
+    margin-bottom: 0.4rem;
+    max-width: 60ch;
+  }
+  .highlights li::before {
+    content: "–";
+    position: absolute;
+    left: 0;
+    color: var(--color-signal);
+  }
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .links {
+    display: flex;
+    gap: 1.25rem;
+  }
+  .links a {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-signal);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

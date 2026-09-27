@@ -1,0 +1,12 @@
+# Éditeurs
+.vscode/*
+!.vscode/extensions.json
+
+# Système d'exploitation
+.DS_Store
+Thumbs.db
+
+# Secrets, quel que soit le dossier où ils traîneraient
+.env
+.env.*
+!.env.example

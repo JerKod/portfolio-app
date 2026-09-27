@@ -1,0 +1,89 @@
+---
+import Glass from "./Glass.astro";
+---
+<Glass as="div" class="pulse-panel">
+  <!-- On part d'un SVG vide : le script va y injecter les barres -->
+  <svg viewBox="0 0 300 60" class="pulse-chart" preserveAspectRatio="none" aria-hidden="true">
+  </svg>
+  <span class="pulse-caption" data-field="caption">loading…</span>
+</Glass>
+
+<style>
+  .pulse-panel {
+    width: 400px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex-shrink: 0;
+  }
+  .pulse-chart {
+    width: 100%;
+    height: 48px;
+    display: block;
+  }
+  /* Chaque barre transitionne en douceur quand sa hauteur change,
+     plutôt que de sauter instantanément d'une valeur à l'autre */
+  .pulse-chart rect {
+    transition: height 0.3s ease, y 0.3s ease;
+  }
+  .pulse-caption {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-slate);
+  }
+  [data-field] { animation: pulse-loading 1.4s ease-in-out infinite; }
+  [data-field].loaded { animation: none; }
+  @keyframes pulse-loading { 50% { opacity: 0.4; } }
+  @media (prefers-reduced-motion: reduce) {
+    [data-field] { animation: none; }
+    .pulse-chart rect { transition: none; }
+  }
+</style>
+
+<script>
+  const panel = document.querySelector(".pulse-panel")!;
+  const chart = panel.querySelector(".pulse-chart")!;
+  const caption = panel.querySelector('[data-field="caption"]')!;
+
+  function renderBars(buckets: number[]) {
+    const maxValue = Math.max(...buckets, 1);
+    const barWidth = 300 / buckets.length;
+    const gap = 3; // petit espace entre chaque barre
+
+    // On reconstruit le contenu du SVG à chaque mise à jour —
+    // simple et suffisant pour 15 barres, pas besoin d'optimiser
+    chart.innerHTML = buckets
+      .map((v, i) => {
+        const height = (v / maxValue) * 44 + 4; // 4 = hauteur minimale visible
+        const x = i * barWidth;
+        const y = 48 - height;
+        return `<rect x="${x}" y="${y}" width="${barWidth - gap}" height="${height}"
+                       rx="1.5" fill="var(--color-signal)" />`;
+      })
+      .join("");
+  }
+
+  function poll() {
+    fetch("/api/pulse")
+      .then((res) => {
+        if (!res.ok) throw new Error("API unavailable");
+        return res.json();
+      })
+      .then((data) => {
+        renderBars(data.buckets);
+        caption.textContent = `${data.requestsInWindow} requests / 15min`;
+        caption.classList.add("loaded");
+      })
+      .catch(() => {
+        caption.textContent = "no data";
+        caption.classList.add("loaded");
+      });
+  }
+
+  poll(); // premier chargement, immédiatement à la visite
+
+  // Puis on relance l'appel toutes les 20 secondes, pour que le
+  // graphique se mette à jour pendant que le visiteur reste sur la page
+  setInterval(poll, 20_000);
+</script>

@@ -1,0 +1,33 @@
+---
+const { label = "Not built yet" } = Astro.props;
+---
+<div class="coming-soon">
+  <span class="tag">{label}</span>
+  <div class="planned">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .coming-soon {
+    border: 1px dashed var(--color-line);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-slate);
+    border: 1px solid var(--color-slate);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+  /* Les badges technos "prévus" sont estompés, pour les distinguer
+     visuellement des technos réellement en place ailleurs sur le site —
+     un signal fonctionnel, pas juste esthétique */
+  .planned {
+    opacity: 0.55;
+  }
+</style>

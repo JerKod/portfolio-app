@@ -1,0 +1,26 @@
+---
+import { Icon } from "astro-icon/components";
+// "name" est le nom de l'icône (ex: "logos:kubernetes")
+// "label" est le texte affiché à côté
+const { name, label } = Astro.props;
+---
+<div class="tech-badge">
+  <Icon name={name} class="badge-icon" /> <span>{label}</span>
+</div>
+
+<style>
+  .tech-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-line);
+    color: var(--color-text);
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+  }
+  .badge-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+</style>

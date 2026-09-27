@@ -1,0 +1,6 @@
+FROM python:3.14-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends git curl build-essential && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir uv
+RUN useradd -ms /bin/bash dev
+USER dev
+WORKDIR /workspace/api

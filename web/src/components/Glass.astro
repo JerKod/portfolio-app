@@ -1,0 +1,26 @@
+---
+// "as" permet de choisir quelle balise HTML utiliser (div par défaut,
+// mais "a" pour un lien cliquable, "span" pour du texte en ligne...).
+// C'est ce qu'on appelle une "balise dynamique" en Astro.
+const { as: Tag = "div", class: className = "", ...rest } = Astro.props;
+---
+<Tag class:list={["glass", className]} {...rest}>
+  <slot />
+</Tag>
+
+<style>
+  .glass {
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+</style>

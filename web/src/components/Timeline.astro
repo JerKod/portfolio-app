@@ -1,0 +1,132 @@
+---
+import TechBadge from "./TechBadge.astro";
+import { resolveTechs } from "../data/technologies";
+import { experiences, formatPeriod } from "../data/experiences";
+
+// On trie par date de début, la plus récente en premier —
+// pratique le jour où l'ordre viendra d'une requête MongoDB
+// plutôt que de l'ordre d'écriture dans un fichier
+const sortedExperiences = [...experiences].sort(
+  (a, b) => b.startDate.localeCompare(a.startDate)
+);
+---
+
+<ol class="timeline">
+  {sortedExperiences.map((exp) => (
+    <li>
+      <span class="period">{formatPeriod(exp)}</span>
+      <div>
+        <h3>{exp.title} <span class="org">· {exp.org}</span></h3>
+        <p class="scope">{exp.scope}</p>
+
+        {exp.highlights.length > 0 && (
+          <ul class="highlights">
+            {exp.highlights.map((h) => <li>{h}</li>)}
+          </ul>
+        )}
+
+        {exp.techIds.length > 0 && (
+          <div class="stack-row">
+            {resolveTechs(exp.techIds).map((tech) => (
+              <TechBadge name={tech.icon} label={tech.label} />
+            ))}
+          </div>
+        )}
+
+        {exp.caseStudyUrl && (
+          <a class="case-study-link" href={exp.caseStudyUrl}>
+            View technical details →
+          </a>
+        )}
+
+      </div>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .timeline > li {
+    display: grid;
+    /* Même principe que le layout global : une colonne fixe pour
+       la date, une colonne flexible pour le contenu */
+    grid-template-columns: 140px 1fr;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--color-line);
+  }
+  .timeline li:first-child {
+    border-top: none;
+  }
+  .period {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-slate);
+  }
+  .timeline h3 {
+    margin: 0 0 0.3rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .org {
+    color: var(--color-slate);
+    font-weight: 400;
+  }
+  .stack-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  @media (max-width: 500px) {
+    .timeline > li {
+      grid-template-columns: 1fr; /* date au-dessus du contenu sur mobile */
+    }
+  }
+
+  .scope {
+    color: var(--color-slate);
+    font-size: 0.95rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .highlights {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.75rem;
+  }
+  .highlights li {
+    position: relative;
+    padding-left: 1.1rem;
+    margin-bottom: 0.4rem;
+  }
+  /* Une puce dessinée nous-même : un simple trait, pas un rond générique */
+  .highlights li::before {
+    content: "–";
+    position: absolute;
+    left: 0;
+    color: var(--color-signal);
+  }
+
+  .stack-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .case-study-link {
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-signal);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/fraunces/700.css";
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+/* Ce bloc @theme dit à Tailwind : "crée des classes comme bg-bg,
+   text-ink, font-display... à partir de ces valeurs" */
+@theme {
+  --color-bg: #F6F5F2;
+  --color-ink: #14171C;
+  --color-slate: #5B6472;
+  --color-signal: #2A6F63;
+  --color-alert: #B5502E;
+  --color-line: #DEDAD1;
+
+  --font-display: "Fraunces", ui-serif, serif;
+  --font-body: "Inter Variable", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+p {
+  text-align: justify;
+  hyphens: auto;
+  /* Évite qu'un paragraphe très large s'étire sur tout l'écran :
+     même en pleine largeur de page, le texte reste lisible.
+     C'est la longueur de ligne recommandée pour la lecture confortable. */
+  max-width: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #14171C;
+    --color-ink: #F0EEE9;
+    --color-slate: #9AA3AF;
+    --color-line: #2A2E35;
+  }
+}

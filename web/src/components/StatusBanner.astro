@@ -1,0 +1,78 @@
+<div class="status-banner border-y border-line font-mono text-sm text-slate flex gap-8 py-3">
+  <!-- data-field identifie chaque valeur que le script ira remplir.
+       Le tiret "—" est un placeholder neutre, pas une fausse donnée -->
+  <span>uptime <strong class="text-signal" data-field="uptime">—</strong></span>
+  <span>requests <strong class="text-ink" data-field="requests">—</strong></span>
+  <span>slo <strong class="text-ink" data-field="slo">—</strong></span>
+</div>
+
+<style>
+  .status-banner {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-bg);
+    min-height: var(--banner-height);
+  }
+  /* Pendant le chargement, un léger effet de pulsation discret
+     indique que la donnée arrive — pas une décoration gratuite,
+     mais un vrai signal d'état ("chargement en cours") */
+  [data-field] {
+    animation: pulse-loading 1.4s ease-in-out infinite;
+  }
+  [data-field].loaded {
+    animation: none;
+  }
+  @keyframes pulse-loading {
+    50% { opacity: 0.4; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-field] { animation: none; }
+  }
+</style>
+
+<script>
+  const banner = document.querySelector(".status-banner")!;
+
+  function setField(name: string, value: string) {
+    const el = banner.querySelector(`[data-field="${name}"]`);
+    if (el) {
+      el.textContent = value;
+      el.classList.add("loaded");
+    }
+  }
+
+  function formatUptime(totalSeconds: number): string {
+    const d = Math.floor(totalSeconds / 86400);
+    const h = Math.floor((totalSeconds % 86400) / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+
+    // On n'affiche que les deux unités les plus significatives :
+    // "3d 4h" est lisible, "3d 4h 12m" ajoute un détail qui n'aide
+    // pas à se représenter une durée de plusieurs jours
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  }
+
+  function poll() {
+    fetch("/api/status")
+      .then((res) => {
+        if (!res.ok) throw new Error("API unavailable");
+        return res.json();
+      })
+      .then((data) => {
+        setField("uptime", formatUptime(data.uptimeSeconds));
+        setField("requests", String(data.requestsTotal));
+        setField("slo", `${data.sloPercent}%`);
+      })
+      .catch(() => {
+        setField("uptime", "n/a");
+        setField("requests", "n/a");
+        setField("slo", "n/a");
+      });
+  }
+
+  poll();
+  setInterval(poll, 20_000);
+</script>

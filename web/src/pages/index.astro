@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StatusBanner from "../components/StatusBanner.astro";
+import Sidebar from "../components/Sidebar.astro";
+import Section from "../components/Section.astro";
+import Hero from "../components/Hero.astro";
+import Timeline from "../components/Timeline.astro";
+import PersonalProjectCard from "../components/PersonalProjectCard.astro";
+import { personalProjects } from "../data/personalProjects";
+---
+<BaseLayout title="Jerome — DevOps Platform Engineer">
+  <StatusBanner />
+
+  <Sidebar />
+
+  <main>
+
+    <Hero />
+
+    <Section id="projects" title="Featured Project">
+      {personalProjects.map((project) => (
+        <PersonalProjectCard project={project} />
+      ))}
+    </Section>
+
+    <Section id="experience" title="Experience">
+      <Timeline />
+    </Section>
+
+  </main>
+</BaseLayout>

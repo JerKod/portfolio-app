@@ -1,0 +1,153 @@
+---
+import { Icon } from "astro-icon/components";
+import Glass from "./Glass.astro";
+import { sortedCertifications } from "../data/certifications";
+import { education } from "../data/education";
+
+const sections = [
+  { href: "/#experience", label: "Experience" },
+  { href: "/#projects", label: "Featured Projects" },
+];
+
+const socials = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/jerome-kodjo-79404789/", icon: "logos:linkedin-icon" },
+  { label: "GitHub", href: "https://github.com/JerKod", icon: "logos:github-icon" },
+  { label: "E-mail", href: "mailto:jerome.kodjo@proton.me", icon: "mdi:email" },
+];
+---
+<nav class="sidebar">
+  <ul class="section-list">
+    {sections.map((s) => (
+      <li><a href={s.href}>{s.label}</a></li>
+    ))}
+  </ul>
+
+  <ul class="social-list">
+    {socials.map((s) => (
+      <li>
+        <Glass as="a" href={s.href} class="social-link">
+          <Icon name={s.icon} class="social-icon" />
+          <span>{s.label}</span>
+        </Glass>
+      </li>
+    ))}
+  </ul>
+
+  <div class="education">
+    <h3 class="block-title">Education</h3>
+    <ul>
+      {education.map((e) => (
+        <li>
+          <span class="degree">{e.degree} · {e.field}</span>
+          <span class="institution">{e.institution}</span>
+          <span class="edu-date">{e.startDate} — {e.endDate}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <div class="certifications">
+    <h3 class="block-title">Certifications</h3>
+    <ul>
+      {sortedCertifications.map((cert) => (
+        <li>
+          <span class="cert-name">{cert.name}</span>
+          <span class="cert-date">{cert.date}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .sidebar {
+    position: sticky;
+    top: calc(var(--banner-height) + 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .section-list, .social-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .section-list a {
+    display: block;
+    padding: 0.4rem 0;
+    color: var(--color-slate);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .section-list a:hover {
+    color: var(--color-ink);
+  }
+  .social-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .sidebar :global(.social-link) {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
+    text-decoration: none;
+    color: var(--color-ink);
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+  }
+  .sidebar :global(.social-icon) {
+    width: 1.1em;
+    height: 1.1em;
+    flex-shrink: 0;
+  }
+
+  /* Nouvelle section certifications */
+  .block-title {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-slate);
+    margin: 0 0 0.75rem;
+  }
+  
+  .education ul, .certifications ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .education li, .certifications li {
+    display: flex;
+    flex-direction: column;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .education li:first-child, .certifications li:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+  
+  .degree {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .institution {
+    font-size: 0.8rem;
+    color: var(--color-slate);
+  }
+  .edu-date, .cert-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-slate);
+  }
+  .cert-name {
+    font-size: 0.85rem;
+    color: var(--color-ink);
+  }
+</style>

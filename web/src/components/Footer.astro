@@ -1,0 +1,76 @@
+---
+import { execSync } from "node:child_process";
+
+function safeGit(cmd: string): string | null {
+  try {
+    return execSync(cmd).toString().trim();
+  } catch {
+    return null;
+  }
+}
+
+// Ordre de priorité :
+// 1. GIT_COMMIT, injecté explicitement par le pipeline de build
+//    (fonctionne à l'identique en local, en CI, et dans Docker)
+// 2. à défaut, on demande à git directement — pratique uniquement
+//    en développement local, où .git est bien présent
+// 3. "local" si aucun des deux n'a fonctionné
+const commitSha =
+  process.env.GIT_COMMIT?.slice(0, 7) ??
+  safeGit("git rev-parse --short HEAD") ??
+  "local";
+
+const buildDate = process.env.BUILD_DATE ?? new Date().toISOString().slice(0, 10);
+const year = new Date().getFullYear();
+const repoUrl = "https://github.com/JerKod/portfolio-app";
+---
+<footer class="site-footer">
+  <span>© {year} Jerome Kodjo</span>
+  <div class="footer-right">
+    <a href={repoUrl} target="_blank" rel="noopener noreferrer">Source</a>
+    <span class="build-info" title={`Built ${buildDate}`}>
+      commit <code>{commitSha}</code>
+    </span>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    grid-area: footer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid var(--color-line);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-slate);
+  }
+  .footer-right {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+  }
+  .footer-right a {
+    color: var(--color-slate);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .footer-right a:hover {
+    color: var(--color-ink);
+  }
+  .build-info code {
+    color: var(--color-signal);
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 720px) {
+    .site-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

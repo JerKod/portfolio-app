@@ -1,0 +1,63 @@
+---
+import "../styles/tokens.css";
+import Footer from "../components/Footer.astro";
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-bg text-ink font-body">
+    <!-- "grid" transforme ce <div> en conteneur de grille CSS -->
+    <div class="page-grid">
+      <slot />
+      <Footer />
+    </div>
+  </body>
+</html>
+
+<style>
+  .page-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    /* Chaque ligne entre guillemets = une rangée de la grille.
+       "banner banner" veut dire : la zone "banner" occupe
+       les deux colonnes de cette rangée.
+       "nav main" veut dire : sur cette rangée, la nav est dans
+       la colonne 1, le contenu dans la colonne 2.
+       "footer footer" : même principe que "banner", sur la
+       dernière rangée. */
+    grid-template-areas:
+      "banner banner"
+      "nav    main"
+      "footer footer";
+    gap: 2rem;
+    padding: 2rem 3rem;
+  }
+
+  /* On assigne maintenant chaque élément à sa zone. */
+  /* ":global()" est nécessaire ici car StatusBanner, Sidebar, main et
+     Footer ne sont pas écrits DANS ce fichier BaseLayout.astro — ce
+     sont des composants externes qui arrivent via le <slot /> (ou,
+     pour Footer, juste après). Par défaut, Astro n'applique le CSS
+     d'un composant qu'aux balises écrites dans ce même fichier ;
+     :global() dit "applique aussi à l'extérieur". */
+  .page-grid :global(.status-banner) { grid-area: banner; }
+  .page-grid :global(.sidebar) { grid-area: nav; }
+  .page-grid :global(main) { grid-area: main; }
+  .page-grid :global(.site-footer) { grid-area: footer; }
+
+  @media (max-width: 720px) {
+    .page-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "banner"
+        "nav"
+        "main"
+        "footer";
+    }
+  }
+</style>

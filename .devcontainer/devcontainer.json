@@ -1,0 +1,27 @@
+{
+  "name": "portfolio-app",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "web",
+  "runServices": ["web", "api"],
+  "workspaceFolder": "/workspace",
+  "remoteUser": "node",
+  "forwardPorts": [4321, 8000],
+  "portsAttributes": {
+    "4321": { "label": "Astro (web)" },
+    "8000": { "label": "FastAPI (api)" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "astro-build.astro-vscode",
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "redhat.vscode-yaml",
+        "hashicorp.terraform"
+      ]
+    }
+  }
+}

@@ -1,0 +1,85 @@
+---
+import PulsePanel from "./PulsePanel.astro";
+
+const name = "Jerome";
+const role = "DevOps - Platform Engineer → SRE";
+const pitch = "I came to engineering through a PhD in numerical simulation — and stayed for infrastructure. Today I build and automate the platforms that keep production systems reliable.";
+---
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-text">
+      <div class="identity">
+        <img src="/portrait.jpg" alt={name} class="portrait" />
+        <div>
+          <h1>{name}</h1>
+          <p class="role">{role}</p>
+        </div>
+      </div>
+      <p class="pitch">{pitch}</p>
+    </div>
+
+    <PulsePanel />
+  </div>
+</header>
+
+<style>
+  .hero {
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  /* "1fr auto" : la colonne de texte prend tout l'espace disponible,
+     la colonne du panneau ne prend que sa largeur naturelle (260px,
+     fixée dans PulsePanel) — c'est ce qui empêche le panneau de
+     s'étirer sur toute la largeur de l'écran */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .portrait {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--color-line);
+    /* Noir et blanc, pour s'intégrer à la palette sobre du site
+       plutôt que d'introduire des couleurs non maîtrisées */
+    filter: grayscale(1) contrast(1.05);
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .role {
+    font-family: var(--font-mono);
+    color: var(--color-signal);
+    margin: 0.25rem 0 0;
+  }
+
+  .pitch {
+    max-width: 60ch;
+  }
+
+  /* Sur mobile, le panneau passe sous le texte plutôt que
+     de forcer deux colonnes trop étroites pour être lisibles */
+  @media (max-width: 720px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
