@@ -10,51 +10,84 @@ const sections = [
 ];
 
 const socials = [
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/jerome-kodjo-79404789/", icon: "logos:linkedin-icon" },
-  { label: "GitHub", href: "https://github.com/JerKod", icon: "logos:github-icon" },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/jerome-kodjo-79404789/",
+    icon: "logos:linkedin-icon",
+  },
+  {
+    label: "GitHub",
+    href: "https://github.com/JerKod",
+    icon: "logos:github-icon",
+  },
   { label: "E-mail", href: "mailto:jerome.kodjo@proton.me", icon: "mdi:email" },
 ];
 ---
+
 <nav class="sidebar">
+  <a
+    href="/"
+    class="brand-mark"
+    aria-label="Back to homepage"
+    title="Back to homepage"
+  >
+    JK
+    <Icon name="mdi:home" class="brand-home-icon" />
+  </a>
+
   <ul class="section-list">
-    {sections.map((s) => (
-      <li><a href={s.href}>{s.label}</a></li>
-    ))}
+    {
+      sections.map((s) => (
+        <li>
+          <a href={s.href}>{s.label}</a>
+        </li>
+      ))
+    }
   </ul>
 
   <ul class="social-list">
-    {socials.map((s) => (
-      <li>
-        <Glass as="a" href={s.href} class="social-link">
-          <Icon name={s.icon} class="social-icon" />
-          <span>{s.label}</span>
-        </Glass>
-      </li>
-    ))}
+    {
+      socials.map((s) => (
+        <li>
+          <Glass as="a" href={s.href} class="social-link">
+            <Icon name={s.icon} class="social-icon" />
+            <span>{s.label}</span>
+          </Glass>
+        </li>
+      ))
+    }
   </ul>
 
   <div class="education">
     <h3 class="block-title">Education</h3>
     <ul>
-      {education.map((e) => (
-        <li>
-          <span class="degree">{e.degree} · {e.field}</span>
-          <span class="institution">{e.institution}</span>
-          <span class="edu-date">{e.startDate} — {e.endDate}</span>
-        </li>
-      ))}
+      {
+        education.map((e) => (
+          <li>
+            <span class="degree">
+              {e.degree} · {e.field}
+            </span>
+            <span class="institution">{e.institution}</span>
+            <span class="edu-date">
+              {e.startDate} — {e.endDate}
+            </span>
+          </li>
+        ))
+      }
     </ul>
   </div>
 
   <div class="certifications">
     <h3 class="block-title">Certifications</h3>
     <ul>
-      {sortedCertifications.map((cert) => (
-        <li>
-          <span class="cert-name">{cert.name}</span>
-          <span class="cert-date">{cert.date}</span>
-        </li>
-      ))}
+      {
+        sortedCertifications.map((cert) => (
+          <li>
+            <span class="cert-name">{cert.name}</span>
+            <span class="cert-date">{cert.date}</span>
+          </li>
+        ))
+      }
     </ul>
   </div>
 </nav>
@@ -67,7 +100,8 @@ const socials = [
     flex-direction: column;
     gap: 2rem;
   }
-  .section-list, .social-list {
+  .section-list,
+  .social-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -112,8 +146,9 @@ const socials = [
     color: var(--color-slate);
     margin: 0 0 0.75rem;
   }
-  
-  .education ul, .certifications ul {
+
+  .education ul,
+  .certifications ul {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -121,17 +156,19 @@ const socials = [
     flex-direction: column;
     gap: 0.6rem;
   }
-  .education li, .certifications li {
+  .education li,
+  .certifications li {
     display: flex;
     flex-direction: column;
     padding-top: 0.6rem;
     border-top: 1px solid var(--color-line);
   }
-  .education li:first-child, .certifications li:first-child {
+  .education li:first-child,
+  .certifications li:first-child {
     border-top: none;
     padding-top: 0;
   }
-  
+
   .degree {
     font-size: 0.85rem;
     font-weight: 600;
@@ -141,7 +178,8 @@ const socials = [
     font-size: 0.8rem;
     color: var(--color-slate);
   }
-  .edu-date, .cert-date {
+  .edu-date,
+  .cert-date {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--color-slate);
@@ -149,5 +187,45 @@ const socials = [
   .cert-name {
     font-size: 0.85rem;
     color: var(--color-ink);
+  }
+  /* Le carré du monogramme */
+  .brand-mark {
+    position: relative; /* nécessaire pour positionner le badge par rapport à ce carré */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: #14171c;
+    color: #2a6f63;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .brand-mark:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Le petit badge maison, en chevauchement sur le coin du carré */
+  .brand-mark :global(.brand-home-icon) {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    padding: 2px;
+    box-sizing: border-box;
+    background: var(--color-bg);
+    border-radius: 50%;
+    color: var(--color-signal);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-mark {
+      transition: none;
+    }
   }
 </style>

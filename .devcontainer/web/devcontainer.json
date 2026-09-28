@@ -1,9 +1,9 @@
 {
-  "name": "portfolio-app",
-  "dockerComposeFile": "docker-compose.yml",
+  "name": "portfolio-app (web)",
+  "dockerComposeFile": ["../docker-compose.yml"],
   "service": "web",
-  "runServices": ["web", "api"],
   "workspaceFolder": "/workspace",
+  "runServices": ["web", "api"],
   "remoteUser": "node",
   "forwardPorts": [4321, 8000],
   "portsAttributes": {
@@ -14,14 +14,18 @@
     "vscode": {
       "extensions": [
         "astro-build.astro-vscode",
-        "ms-python.python",
-        "charliermarsh.ruff",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "bradlc.vscode-tailwindcss",
         "redhat.vscode-yaml",
         "hashicorp.terraform"
-      ]
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[astro]": { "editor.defaultFormatter": "astro-build.astro-vscode" },
+        "files.eol": "\n"
+      }
     }
   }
 }

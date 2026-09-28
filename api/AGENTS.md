@@ -1,26 +1,28 @@
 # AGENTS.md — api/
 
-FastAPI backend serving live site metrics, consumed client-side by `web/`.
-No database yet — state is in-memory, reset on every restart (MongoDB/Valkey
-planned for a later phase, without changing endpoint response shapes).
+FastAPI backend that exposes live site metrics for the frontend. Keep the service simple and the response contracts stable while the infrastructure layer matures.
 
 ## Commands
 
 ```bash
-uv sync                                              # install dependencies
+uv sync
 uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
-uv add <package>                                     # add a dependency
-uv run pytest                                        # run tests (once added)
+uv add <package>
+uv run pytest
 ```
+
+## Rules
+
+- Keep a single `uvicorn` process per container; do not add a second server layer or worker model.
+- Model responses as plain JSON-friendly dicts. The API does not yet use a database or ORM.
+- Treat current endpoint shapes as a compatibility contract; changes should be intentional and reflected in both frontend expectations and docs.
 
 ## Structure
 
-- `src/main.py` — FastAPI app, all routes currently in this single file
-- `pyproject.toml` / `uv.lock` — dependencies (commit both, never `.venv/`)
+- `src/main.py` — current app entrypoint and all route definitions
+- `pyproject.toml` / `uv.lock` — dependency management; keep both updated when adding packages
 
-## Conventions
+## Notes
 
-- Single `uvicorn` process per container — no gunicorn, no multiple workers.
-  Scaling is handled by Kubernetes replicas, not in-process workers (see ADR).
-- Endpoints return plain dicts (FastAPI serializes to JSON); no MongoDB/ORM
-  models yet — keep response shapes stable when data source changes.
+- In-memory state resets on restart; this is intentional for the current phase.
+- Use the existing FastAPI docs and route naming patterns before introducing new modules or abstractions.

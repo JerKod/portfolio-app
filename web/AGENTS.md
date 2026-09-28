@@ -1,41 +1,31 @@
 # AGENTS.md — web/
 
-Astro frontend, styled with Tailwind CSS. See `README.md` for setup.
+Astro frontend for the portfolio site. Follow the project docs in [`README.md`](./README.md) and keep the app buildable without the backend running.
 
 ## Development
 
-`astro dev` starts automatically in background mode when an AI coding
-agent is detected (Astro 7+). Manage it with:
+From inside the dev container:
 
 ```bash
-astro dev --background   # start explicitly
-astro dev stop
-astro dev status
-astro dev logs -f
+npm install
+npm run dev -- --host 0.0.0.0
+npm run build
 ```
 
-## Critical constraint
+## Critical rules
 
-`npm run build` must succeed with the `api` service **not running** — it
-runs in CI/Docker, where `api` isn't available yet. Never call `fetch()`
-inside a component's frontmatter (the `---` block); anything that depends
-on the API is fetched client-side, in a `<script>` tag, after the page
-loads. See `src/components/StatusBanner.astro` for the established pattern.
+- `npm run build` must succeed when the `api` service is not running.
+- Data that is already represented in `src/data/*.ts` should be reused rather than re-encoded in component markup.
+- Do not call `fetch()` in a component's frontmatter block; fetch client-side after page load, as shown by `src/components/StatusBanner.astro`.
 
 ## Conventions
 
-- Content data (experiences, certifications, tech catalog) lives in
-  `src/data/*.ts` — never hardcode content directly in `.astro` files
-- Design tokens (colors, fonts) live in `src/styles/tokens.css`, consumed
-  via Tailwind's `@theme` block — check there before introducing new colors
+- Keep route-level content in `src/pages/` and reusable UI in `src/components/`.
+- Use existing tokens from `src/styles/tokens.css` before adding new colors or typography values.
+- Prefer the established Astro patterns already used in the project rather than introducing new frameworks or content systems.
 
-## Documentation
+## Useful references
 
-Full docs: https://docs.astro.build. Relevant to this project:
-
-- [Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Routing](https://docs.astro.build/en/guides/routing/)
-- [Styling / Tailwind](https://docs.astro.build/en/guides/styling/)
-
-(This project doesn't use content collections, i18n, or non-Astro
-framework components — those guides don't apply here.)
+- [Astro component docs](https://docs.astro.build/en/basics/astro-components/)
+- [Astro routing docs](https://docs.astro.build/en/guides/routing/)
+- [Astro styling docs](https://docs.astro.build/en/guides/styling/)
