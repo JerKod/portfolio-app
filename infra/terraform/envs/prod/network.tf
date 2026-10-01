@@ -26,13 +26,12 @@ resource "oci_core_default_route_table" "default" {
 # Sous-réseau régional (pas lié à un AD précis) : pratique recommandée
 # actuelle sur OCI, les instances choisissent leur AD indépendamment.
 resource "oci_core_subnet" "public" {
-  compartment_id    = var.compartment_ocid
-  vcn_id            = oci_core_vcn.main.id
-  cidr_block        = "10.0.1.0/24"
-  display_name      = "portfolio-public"
-  dns_label         = "public"
-  route_table_id    = oci_core_vcn.main.default_route_table_id
-  security_list_ids = []
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.main.id
+  cidr_block     = "10.0.1.0/24"
+  display_name   = "portfolio-public"
+  dns_label      = "public"
+  route_table_id = oci_core_vcn.main.default_route_table_id
 }
 
 # --- NSG dédié au Load Balancer : seul élément exposé au monde entier ---
