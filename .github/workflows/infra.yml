@@ -1,0 +1,105 @@
+name: infra
+
+on:
+  pull_request:
+    paths: ["infra/terraform/**"]
+  push:
+    branches: [main]
+    paths: ["infra/terraform/**"]
+
+# Contrairement aux workflows web/api (où annuler un run obsolète est
+# sans risque), on ne DOIT jamais interrompre un apply en cours — ça
+# pourrait laisser l'infrastructure dans un état à moitié appliqué.
+# On met en file d'attente plutôt que d'annuler.
+concurrency:
+  group: terraform-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+  TF_VAR_user_ocid: ${{ secrets.OCI_USER_OCID }}
+  TF_VAR_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+  TF_VAR_private_key: ${{ secrets.OCI_PRIVATE_KEY }}
+  TF_VAR_private_key_password: ${{ secrets.OCI_PRIVATE_KEY_PASSWORD }}
+  TF_VAR_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+  TF_VAR_tailscale_authkey: ${{ secrets.OCI_TAILSCALE_AUTHKEY }}
+  TF_VAR_region: ${{ vars.OCI_REGION }}
+  # Le backend "s3" lit ces deux variables automatiquement
+  AWS_ACCESS_KEY_ID: ${{ secrets.TFSTATE_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.TFSTATE_SECRET_KEY }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: infra/terraform/envs/prod
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.14.6" # vérifie la dernière version stable avant de figer
+
+      - run: terraform fmt -check -recursive
+
+      - run: terraform init
+
+      - run: terraform validate
+
+      - id: plan
+        run: terraform plan -out=tfplan -no-color
+        continue-on-error: true
+
+      - name: Publish plan to job summary
+        run: |
+          {
+            echo "### Terraform Plan"
+            echo '```'
+            terraform show -no-color tfplan
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail the job if plan errored
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      # Seul un push vers main produit un plan destiné à être appliqué —
+      # une PR n'a qu'une valeur informative, jamais d'artefact à conserver
+      - name: Upload plan artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: tfplan
+          path: infra/terraform/envs/prod/tfplan
+          retention-days: 1
+
+  apply:
+    needs: plan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: production   # ← déclenche la pause d'approbation manuelle
+    defaults:
+      run:
+        working-directory: infra/terraform/envs/prod
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.14.6"
+
+      - run: terraform init
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: tfplan
+          path: infra/terraform/envs/prod
+
+      # Applique EXACTEMENT le plan déjà calculé et revu — jamais
+      # un nouveau "terraform apply" sans fichier de plan en argument
+      - run: terraform apply tfplan

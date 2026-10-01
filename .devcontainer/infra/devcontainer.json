@@ -1,0 +1,21 @@
+{
+  "name": "portfolio-app (infra)",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "infra",
+  "workspaceFolder": "/workspace/infra",
+  "runServices": ["infra"],
+  "remoteUser": "dev",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "hashicorp.terraform",
+        "redhat.ansible",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "terraform.experimentalFeatures.validateOnSave": true,
+        "files.eol": "\n"
+      }
+    }
+  }
+}
