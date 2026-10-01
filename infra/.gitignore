@@ -1,0 +1,63 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.json
+crash.log
+crash.*.log
+# Keep the dependency lock file committed.
+!.terraform.lock.hcl
+# Keep safe variable templates; ignore real variable values.
+*.tfvars
+*.tfvars.json
+!*.example.tfvars
+!*.example.tfvars.json
+
+# Ansible
+*.retry
+.retry/
+.ansible/
+ansible.log
+facts_cache/
+
+# Generated inventories and local host data
+generated-inventory/
+inventory.generated*
+host_vars/*/vault.yml
+group_vars/*/vault.yml
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+.oci/
+*.pem
+*.key
+*.p12
+*.pfx
+*.kubeconfig
+kubeconfig*
+
+# Local Python tooling and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs and local runtime output
+*.log
+logs/
+tmp/
+tmpfiles/
+
+# Editors and operating-system files
+.vscode/settings.json
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo

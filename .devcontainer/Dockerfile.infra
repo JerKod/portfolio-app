@@ -1,0 +1,38 @@
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      curl gnupg unzip git openssh-client python3 python3-pip python3-venv \
+      ca-certificates lsb-release sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Terraform, via le dépôt apt officiel HashiCorp
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+       > /etc/apt/sources.list.d/hashicorp.list \
+    && apt-get update && apt-get install -y terraform \
+    && rm -rf /var/lib/apt/lists/*
+
+# Tailscale, via son script d'installation officiel
+RUN curl -fsSL https://tailscale.com/install.sh | sh
+
+# Ansible et le CLI OCI, via pip (pas de paquet apt fiable pour oci-cli)
+RUN pip3 install --no-cache-dir --break-system-packages \
+      ansible ansible-lint oci-cli
+
+# Utilisateur non-root, aligné sur l'UID de l'hôte
+ARG USER_UID=1000
+ARG USER_GID=1000
+RUN if getent group "$USER_GID" >/dev/null; then \
+      groupmod -n dev "$(getent group "$USER_GID" | cut -d: -f1)"; \
+    else \
+      groupadd -g "$USER_GID" dev; \
+    fi \
+ && if getent passwd "$USER_UID" >/dev/null; then \
+      usermod -l dev -d /home/dev -m -g "$USER_GID" "$(getent passwd "$USER_UID" | cut -d: -f1)"; \
+    else \
+      useradd -m -u "$USER_UID" -g "$USER_GID" -s /bin/bash dev; \
+    fi \
+ && echo "dev ALL=(root) NOPASSWD: /usr/sbin/tailscaled, /usr/bin/tailscale" > /etc/sudoers.d/dev
+
+USER dev
+WORKDIR /workspace/infra

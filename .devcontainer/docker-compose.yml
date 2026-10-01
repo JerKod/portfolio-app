@@ -12,3 +12,18 @@ services:
     ports: [ "8000:8000" ]
     environment:
       - PYTHONUNBUFFERED=1
+  
+  infra:
+    build:
+      context: .
+      dockerfile: Dockerfile.infra
+      args: { USER_UID: "${UID:-1000}", USER_GID: "${GID:-1000}" }
+    volumes:
+      - "..:/workspace:cached"
+      - "${HOME}/.oci:/home/dev/.oci:ro"
+    # Nécessaires pour que Tailscale puisse créer son interface réseau
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun"
+    command: sleep infinity
