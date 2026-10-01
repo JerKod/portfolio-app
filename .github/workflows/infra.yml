@@ -31,6 +31,8 @@ env:
   # Le backend "s3" lit ces deux variables automatiquement
   AWS_ACCESS_KEY_ID: ${{ secrets.TFSTATE_ACCESS_KEY }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.TFSTATE_SECRET_KEY }}
+  AWS_REQUEST_CHECKSUM_CALCULATION: "when_required"
+  AWS_RESPONSE_CHECKSUM_VALIDATION: "when_required"
 
 jobs:
   plan:
