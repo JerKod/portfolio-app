@@ -56,12 +56,12 @@ variable "node_memory_gb" {
 
 variable "boot_volume_size_gb" {
   type    = number
-  default = 48
+  default = 50
 }
 
 variable "data_volume_size_gb" {
   type    = number
-  default = 48
+  default = 50
 }
 
 variable "nodes" {
