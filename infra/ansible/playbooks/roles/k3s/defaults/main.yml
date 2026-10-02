@@ -1,0 +1,12 @@
+---
+# Snapshots etcd vers Object Storage : désactivés pour l'instant, le bucket
+# dédié n'existe pas encore côté Terraform. On les activera plus tard
+# (fiabilité/sauvegardes) sans rien changer à ce rôle — juste ces variables.
+k3s_etcd_s3_enabled: false
+k3s_etcd_snapshot_cron: "0 */6 * * *"
+k3s_etcd_snapshot_retention: 20
+k3s_etcd_s3_endpoint: ""
+k3s_etcd_s3_bucket: ""
+k3s_etcd_s3_region: ""
+k3s_etcd_s3_access_key: ""
+k3s_etcd_s3_secret_key: ""

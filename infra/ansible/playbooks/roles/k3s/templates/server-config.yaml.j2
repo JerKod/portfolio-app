@@ -1,0 +1,16 @@
+cluster-init: true
+node-ip: {{ ansible_default_ipv4.address }}
+tls-san:
+  - "{{ inventory_hostname }}"   # nom Tailscale, pour un kubectl distant plus tard
+write-kubeconfig-mode: "0640"
+secrets-encryption: true
+{% if k3s_etcd_s3_enabled %}
+etcd-snapshot-schedule-cron: "{{ k3s_etcd_snapshot_cron }}"
+etcd-snapshot-retention: {{ k3s_etcd_snapshot_retention }}
+etcd-s3: true
+etcd-s3-endpoint: "{{ k3s_etcd_s3_endpoint }}"
+etcd-s3-bucket: "{{ k3s_etcd_s3_bucket }}"
+etcd-s3-region: "{{ k3s_etcd_s3_region }}"
+etcd-s3-access-key: "{{ k3s_etcd_s3_access_key }}"
+etcd-s3-secret-key: "{{ k3s_etcd_s3_secret_key }}"
+{% endif %}

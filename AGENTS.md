@@ -68,3 +68,5 @@ When the task involves a failing devcontainer, CI workflow, or infrastructure se
 - Prefer edits that match the repo’s current conventions and service ownership.
 - If a task spans multiple services, keep the responsibilities explicit and do not mix Terraform ownership with app logic or local OS configuration.
 - Default to the repo docs and service AGENTS files, not ad hoc assumptions.
+- When repository guidance already exists, prefer updating the existing instruction files instead of creating duplicate AGENTS or Copilot instruction files.
+- Use [.github/copilot-instructions.md](.github/copilot-instructions.md) as the repo-wide default and keep service-specific AGENTS files scoped to the relevant service only.

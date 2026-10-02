@@ -1,0 +1,59 @@
+---
+- name: Create k3s config directory
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    mode: "0755"
+
+- name: Deploy server configuration
+  ansible.builtin.template:
+    src: server-config.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml
+    mode: "0600"
+  when: inventory_hostname in groups['k3s_servers']
+
+- name: Deploy agent configuration
+  ansible.builtin.template:
+    src: agent-config.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml
+    mode: "0600"
+  when: inventory_hostname in groups['k3s_agents']
+  no_log: true  # contient le jeton de jointure
+
+- name: Install k3s (server)
+  ansible.builtin.shell: timeout 300 bash -c "curl -sfL https://get.k3s.io | sh -"
+  args:
+    creates: /usr/local/bin/k3s
+  when: inventory_hostname in groups['k3s_servers']
+
+- name: Install k3s (agent)
+  ansible.builtin.shell: timeout 300 bash -c "curl -sfL https://get.k3s.io | sh -"
+  args:
+    creates: /usr/local/bin/k3s
+  environment:
+    INSTALL_K3S_EXEC: "agent"
+    K3S_URL: "https://{{ hostvars[groups['k3s_servers'][0]]['ansible_default_ipv4']['address'] }}:6443"
+    K3S_TOKEN: "{{ k3s_node_token }}"
+  when: inventory_hostname in groups['k3s_agents']
+  no_log: true
+
+- name: Ensure k3s server service is running
+  ansible.builtin.systemd:
+    name: k3s
+    enabled: true
+    state: started
+  when: inventory_hostname in groups['k3s_servers']
+
+- name: Wait for the k3s API to respond
+  ansible.builtin.wait_for:
+    port: 6443
+    host: "{{ ansible_default_ipv4.address }}"
+    timeout: 120
+  when: inventory_hostname in groups['k3s_servers']
+
+- name: Ensure k3s agent service is running
+  ansible.builtin.systemd:
+    name: k3s-agent
+    enabled: true
+    state: started
+  when: inventory_hostname in groups['k3s_agents']

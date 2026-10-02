@@ -1,4 +1,34 @@
 ---
+# --- Neutraliser le pare-feu restrictif par défaut d'Oracle, EN PREMIER ---
+# Les images marketplace Oracle embarquent netfilter-persistent avec une
+# liste blanche stricte (SSH uniquement) — à désactiver avant toute autre
+# tâche, puisque k3s a besoin du reste des ports ouverts pour fonctionner.
+- name: Check for Oracle's default iptables-persistent service
+  ansible.builtin.systemd:
+    name: netfilter-persistent
+  register: netfilter_persistent_status
+  failed_when: false
+
+- name: Disable Oracle's default restrictive iptables ruleset
+  when: netfilter_persistent_status.status is defined
+  block:
+    - name: Stop and disable netfilter-persistent
+      ansible.builtin.systemd:
+        name: netfilter-persistent
+        state: stopped
+        enabled: false
+      notify: Reboot node
+
+    - name: Mask the service to prevent re-activation
+      ansible.builtin.systemd:
+        name: netfilter-persistent
+        masked: true
+
+    - name: Remove the persisted restrictive rules file
+      ansible.builtin.file:
+        path: /etc/iptables/rules.v4
+        state: absent
+
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true
@@ -7,6 +37,17 @@
 - name: Upgrade all packages to latest security patches
   ansible.builtin.apt:
     upgrade: safe
+
+- name: Check whether a reboot is required by package upgrades
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required_file
+
+- name: Trigger reboot if upgrades require it
+  ansible.builtin.command: /bin/true
+  changed_when: true
+  when: reboot_required_file.stat.exists
+  notify: Reboot node 
 
 - name: Set timezone
   community.general.timezone:
