@@ -1,0 +1,13 @@
+---
+- name: Minimal connectivity and facts check
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Report uptime
+      ansible.builtin.command: uptime
+      register: result
+      changed_when: false
+
+    - name: Show result
+      ansible.builtin.debug:
+        var: result.stdout
