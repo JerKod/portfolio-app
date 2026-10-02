@@ -1,0 +1,13 @@
+---
+# Volontairement minimal (budget RAM serré) : réglages par défaut d'auditd,
+# sans jeu de règles personnalisé pour l'instant
+- name: Install auditd
+  ansible.builtin.apt:
+    name: auditd
+    state: present
+
+- name: Ensure auditd is enabled and running
+  ansible.builtin.systemd:
+    name: auditd
+    enabled: true
+    state: started
