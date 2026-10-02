@@ -119,14 +119,17 @@ jobs:
         uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-client-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          oauth-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
           tags: tag:ci
 
       - name: Install Ansible
         run: pip install --break-system-packages ansible
 
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r requirements.yml
+
       - name: Quick connectivity check
         run: ansible all -i inventories/prod/hosts.yml -m ping
 
-      - name: Run minimal playbook
-        run: ansible-playbook -i inventories/prod/hosts.yml playbooks/ping.yml
+      - name: Run hardening playbook
+        run: ansible-playbook -i inventories/prod/hosts.yml playbooks/harden.yml

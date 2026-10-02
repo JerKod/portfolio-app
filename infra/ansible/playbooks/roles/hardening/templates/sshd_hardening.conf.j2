@@ -1,0 +1,11 @@
+# Managed by Ansible (role: hardening) — do not edit by hand.
+# Defense in depth only: actual CI/human access goes through Tailscale SSH,
+# governed by the tailnet ACL, not by this file.
+PermitRootLogin {{ hardening_ssh_permit_root_login }}
+PasswordAuthentication {{ hardening_ssh_password_authentication }}
+KbdInteractiveAuthentication no
+X11Forwarding no
+AllowTcpForwarding no
+MaxAuthTries {{ hardening_ssh_max_auth_tries }}
+ClientAliveInterval {{ hardening_ssh_client_alive_interval }}
+ClientAliveCountMax {{ hardening_ssh_client_alive_count_max }}

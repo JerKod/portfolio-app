@@ -1,0 +1,56 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Upgrade all packages to latest security patches
+  ansible.builtin.apt:
+    upgrade: safe
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ hardening_timezone }}"
+
+- name: Ensure chrony is installed for accurate time sync
+  ansible.builtin.apt:
+    name: chrony
+    state: present
+
+- name: Ensure chrony is enabled and running
+  ansible.builtin.systemd:
+    name: chrony
+    enabled: true
+    state: started
+
+# chrony et systemd-timesyncd se disputeraient la même horloge si les deux
+# restaient actifs — chrony est le plus précis des deux, on retire l'autre
+- name: Remove systemd-timesyncd
+  ansible.builtin.apt:
+    name: systemd-timesyncd
+    state: absent
+
+- name: Configure automatic security updates
+  ansible.builtin.import_tasks: updates.yml
+
+- name: Harden the system SSH daemon (defense in depth)
+  ansible.builtin.import_tasks: ssh.yml
+
+- name: Apply kernel network hardening
+  ansible.builtin.import_tasks: sysctl.yml
+
+- name: Enable audit logging
+  ansible.builtin.import_tasks: audit.yml
+
+# Prérequis strict de Kubernetes/k3s : kubelet refuse de démarrer si du
+# swap est actif
+- name: Disable swap
+  ansible.builtin.command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+  changed_when: ansible_swaptotal_mb > 0
+
+- name: Remove any swap entry from fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^\S+\s+\S+\s+swap\s+'
+    state: absent
