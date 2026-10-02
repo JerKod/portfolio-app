@@ -1,0 +1,42 @@
+---
+- name: Deploy k3s server
+  hosts: k3s_servers
+  become: true
+  roles:
+    - k3s
+
+- name: Retrieve join token from the server
+  hosts: k3s_servers
+  become: true
+  tasks:
+    - name: Read node-token file
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token_raw
+      no_log: true
+
+    - name: Expose token as a fact for the agent play
+      ansible.builtin.set_fact:
+        k3s_node_token: "{{ (k3s_token_raw.content | b64decode).strip() }}"
+      no_log: true
+
+- name: Deploy k3s agent
+  hosts: k3s_agents
+  become: true
+  vars:
+    k3s_node_token: "{{ hostvars[groups['k3s_servers'][0]]['k3s_node_token'] }}"
+  roles:
+    - k3s
+
+- name: Verify the cluster
+  hosts: k3s_servers
+  become: true
+  tasks:
+    - name: List nodes
+      ansible.builtin.command: k3s kubectl get nodes -o wide
+      register: nodes_status
+      changed_when: false
+
+    - name: Show cluster status
+      ansible.builtin.debug:
+        msg: "{{ nodes_status.stdout_lines }}"

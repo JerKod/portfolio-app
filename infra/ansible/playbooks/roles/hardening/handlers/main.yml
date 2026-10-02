@@ -3,3 +3,10 @@
   ansible.builtin.systemd:
     name: ssh
     state: restarted
+
+- name: Reboot node
+  ansible.builtin.reboot:
+    msg: "Reboot triggered by Ansible (hardening role)"
+    reboot_timeout: 300
+    connect_timeout: 30
+    test_command: uptime
