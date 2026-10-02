@@ -5,6 +5,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates lsb-release sudo \
     && rm -rf /var/lib/apt/lists/*
 
+ENV LC_ALL="C.UTF-8"
+
 # Terraform, via le dépôt apt officiel HashiCorp
 RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \

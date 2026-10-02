@@ -2,10 +2,10 @@ name: infra
 
 on:
   pull_request:
-    paths: ["infra/terraform/**"]
+    paths: ["infra/**"]
   push:
     branches: [main]
-    paths: ["infra/terraform/**"]
+    paths: ["infra/**"]
 
 # Contrairement aux workflows web/api (où annuler un run obsolète est
 # sans risque), on ne DOIT jamais interrompre un apply en cours — ça
@@ -31,8 +31,8 @@ env:
   # Le backend "s3" lit ces deux variables automatiquement
   AWS_ACCESS_KEY_ID: ${{ secrets.TFSTATE_ACCESS_KEY }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.TFSTATE_SECRET_KEY }}
-  AWS_REQUEST_CHECKSUM_CALCULATION: "when_required"
-  AWS_RESPONSE_CHECKSUM_VALIDATION: "when_required"
+  AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+  AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
 
 jobs:
   plan:
@@ -105,3 +105,28 @@ jobs:
       # Applique EXACTEMENT le plan déjà calculé et revu — jamais
       # un nouveau "terraform apply" sans fichier de plan en argument
       - run: terraform apply tfplan
+
+  ansible:
+    needs: apply
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: infra/ansible
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-client-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+
+      - name: Install Ansible
+        run: pip install --break-system-packages ansible
+
+      - name: Quick connectivity check
+        run: ansible all -i inventories/prod/hosts.yml -m ping
+
+      - name: Run minimal playbook
+        run: ansible-playbook -i inventories/prod/hosts.yml playbooks/ping.yml
