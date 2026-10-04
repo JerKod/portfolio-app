@@ -1,2 +1,3 @@
 ---
 storage_mount_path: /mnt/longhorn
+storage_device_path: /dev/oracleoci/oraclevdb

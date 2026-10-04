@@ -14,18 +14,24 @@
     enabled: true
     state: started
 
+- name: Check for the expected OCI block device symlink
+  ansible.builtin.stat:
+    path: "{{ storage_device_path }}"
+  register: oracle_data_device
+
 - name: Safety check — confirm the expected device exists and isn't root
   ansible.builtin.assert:
     that:
-      - "'oraclevdb' in (ansible_device_links.ids.keys() | list | join(' '))"
+      - oracle_data_device.stat.exists
+      - oracle_data_device.stat.islnk
     fail_msg: >
-      The device /dev/oracleoci/oraclevdb is not found — please verify
+      The device {{ storage_device_path }} is not found — please verify
       that the Terraform volume is properly attached before rerunning.
 
 - name: Create LVM physical volume (no-op if already done)
   community.general.lvg:
     vg: data_vg
-    pvs: /dev/oracleoci/oraclevdb
+    pvs: "{{ storage_device_path }}"
     state: present
 
 - name: Create logical volume using 100% of the volume group
