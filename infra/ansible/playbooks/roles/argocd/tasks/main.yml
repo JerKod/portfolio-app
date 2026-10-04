@@ -1,0 +1,69 @@
+---
+- name: Install the Python Kubernetes client library (required by kubernetes.core.k8s)
+  ansible.builtin.apt:
+    name: python3-kubernetes
+    state: present
+    update_cache: true
+
+- name: Install Helm
+  ansible.builtin.shell: |
+    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  args:
+    creates: /usr/local/bin/helm
+
+- name: Add the Argo Helm repository
+  kubernetes.core.helm_repository:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    name: argo
+    repo_url: https://argoproj.github.io/argo-helm
+    state: present
+
+- name: Install or upgrade Argo CD
+  kubernetes.core.helm:
+    name: argocd
+    chart_ref: argo/argo-cd
+    release_namespace: argocd
+    create_namespace: true
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    wait: true
+    values:
+      server:
+        service:
+          type: ClusterIP
+      configs:
+        params:
+          server.insecure: true
+
+- name: Ensure the velero namespace exists
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    api_version: v1
+    kind: Namespace
+    name: velero
+    state: present
+
+- name: Create the Velero S3 credentials secret
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    apply: true
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: velero-oci-credentials
+        namespace: velero
+      type: Opaque
+      stringData:
+        cloud: |
+          [default]
+          aws_access_key_id={{ argocd_velero_access_key }}
+          aws_secret_access_key={{ argocd_velero_secret_key }}
+  no_log: true
+
+- name: Apply the root Argo CD Application (app-of-apps bootstrap)
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    apply: true
+    definition: "{{ lookup('template', 'root-application.yaml.j2') }}"

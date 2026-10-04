@@ -1,0 +1,13 @@
+defaultSettings:
+  defaultDataPath: /mnt/longhorn
+  defaultReplicaCount: 2
+  createDefaultDiskLabeledNodes: true
+
+persistence:
+  defaultClass: true
+  defaultClassReplicaCount: 2
+  reclaimPolicy: Retain   # une suppression de PVC ne détruit jamais les données par erreur
+
+# Jamais exposé publiquement — même principe que pour Argo CD
+ingress:
+  enabled: false

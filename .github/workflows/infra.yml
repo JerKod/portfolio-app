@@ -139,3 +139,9 @@ jobs:
 
       - name: Mount persistent storage
         run: ansible-playbook -i inventories/prod/hosts.yml playbooks/storage.yml
+
+      - name: Bootstrap Argo CD
+        run: ansible-playbook -i inventories/prod/hosts.yml playbooks/argocd.yml
+        env:
+          VELERO_ACCESS_KEY: ${{ secrets.OCI_VELERO_ACCESS_KEY }}
+          VELERO_SECRET_KEY: ${{ secrets.OCI_VELERO_SECRET_KEY }}
