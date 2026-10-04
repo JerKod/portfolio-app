@@ -1,0 +1,58 @@
+---
+- name: Install LVM and iSCSI tools (iSCSI required by Longhorn)
+  ansible.builtin.apt:
+    name:
+      - lvm2
+      - open-iscsi
+      - nfs-common   # Longhorn le recommande pour les volumes RWX (accès multi-pods)
+    state: present
+    update_cache: true
+
+- name: Ensure iscsid is enabled and running (Longhorn hard requirement)
+  ansible.builtin.systemd:
+    name: iscsid
+    enabled: true
+    state: started
+
+- name: Safety check — confirm the expected device exists and isn't root
+  ansible.builtin.assert:
+    that:
+      - "'oraclevdb' in (ansible_device_links.ids.keys() | list | join(' '))"
+    fail_msg: >
+      The device /dev/oracleoci/oraclevdb is not found — please verify
+      that the Terraform volume is properly attached before rerunning.
+
+- name: Create LVM physical volume (no-op if already done)
+  community.general.lvg:
+    vg: data_vg
+    pvs: /dev/oracleoci/oraclevdb
+    state: present
+
+- name: Create logical volume using 100% of the volume group
+  community.general.lvol:
+    vg: data_vg
+    lv: data_lv
+    size: 100%VG
+    state: present
+    shrink: false   # garde-fou : n'accepte jamais de RÉDUIRE le volume
+
+- name: Format the logical volume as ext4 (no-op if already formatted)
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/data_vg/data_lv
+
+- name: Mount the logical volume persistently
+  ansible.posix.mount:
+    path: "{{ storage_mount_path }}"
+    src: /dev/data_vg/data_lv
+    fstype: ext4
+    opts: defaults,nofail
+    state: mounted
+
+- name: Ensure correct ownership
+  ansible.builtin.file:
+    path: "{{ storage_mount_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"

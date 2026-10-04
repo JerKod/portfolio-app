@@ -133,6 +133,9 @@ jobs:
 
       - name: Run hardening playbook
         run: ansible-playbook -i inventories/prod/hosts.yml playbooks/harden.yml
-      
+
       - name: Run k3s deployment playbook
         run: ansible-playbook -i inventories/prod/hosts.yml playbooks/k3s.yml
+
+      - name: Mount persistent storage
+        run: ansible-playbook -i inventories/prod/hosts.yml playbooks/storage.yml
