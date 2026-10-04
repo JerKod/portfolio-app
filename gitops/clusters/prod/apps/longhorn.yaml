@@ -8,7 +8,7 @@ spec:
   sources:
     - repoURL: https://charts.longhorn.io
       chart: longhorn
-      targetRevision: "1.*"   # vérifie la dernière version stable avant de figer
+      targetRevision: "1.13.0"
       helm:
         valueFiles:
           - $values/gitops/platform/longhorn/values.yaml
