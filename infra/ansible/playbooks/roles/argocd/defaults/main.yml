@@ -1,0 +1,6 @@
+---
+argocd_gitops_repo_url: "https://github.com/JerKod/portfolio-app.git"
+argocd_gitops_repo_branch: "main"
+argocd_gitops_repo_path: "gitops/clusters/prod/apps"
+argocd_velero_access_key: "{{ lookup('env', 'VELERO_ACCESS_KEY') }}"
+argocd_velero_secret_key: "{{ lookup('env', 'VELERO_SECRET_KEY') }}"

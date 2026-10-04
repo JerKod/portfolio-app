@@ -1,0 +1,6 @@
+---
+- name: Bootstrap Argo CD and the GitOps root Application
+  hosts: k3s-server
+  become: true
+  roles:
+    - argocd
