@@ -61,7 +61,7 @@ variable "boot_volume_size_gb" {
 
 variable "data_volume_size_gb" {
   type    = number
-  default = 30
+  default = 50
 }
 
 variable "nodes" {
