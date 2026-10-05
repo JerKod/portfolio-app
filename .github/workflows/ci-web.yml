@@ -61,6 +61,9 @@ jobs:
             type=semver,pattern={{major}}
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
       - uses: docker/setup-buildx-action@v4
 
       - id: date
@@ -70,6 +73,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: web
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
