@@ -1,0 +1,21 @@
+---
+- name: Install Gateway API CRDs (standard channel)
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    src: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/standard-install.yaml
+
+- name: Enable Traefik's Gateway API provider (k3s-native HelmChartConfig)
+  ansible.builtin.template:
+    src: traefik-helmchartconfig.yaml.j2
+    dest: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+    mode: "0644"
+  # k3s surveille ce dossier et applique automatiquement tout fichier
+  # qui y apparaît — pas besoin d'un "kubectl apply" explicite ici
+
+- name: Apply the public Gateway resource
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    apply: true
+    definition: "{{ lookup('template', 'public-gateway.yaml.j2') }}"

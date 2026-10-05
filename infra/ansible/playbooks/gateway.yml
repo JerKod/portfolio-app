@@ -1,0 +1,6 @@
+---
+- name: Deploy Gateway API, Traefik config, and public Gateway
+  hosts: k3s_servers
+  become: true
+  roles:
+    - gateway

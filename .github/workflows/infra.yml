@@ -140,6 +140,9 @@ jobs:
       - name: Mount persistent storage
         run: ansible-playbook -i inventories/prod/hosts.yml playbooks/storage.yml
 
+      - name: Deploy Gateway API and Traefik
+        run: ansible-playbook -i inventories/prod/hosts.yml playbooks/gateway.yml
+
       - name: Bootstrap Argo CD
         run: ansible-playbook -i inventories/prod/hosts.yml playbooks/argocd.yml
         env:
