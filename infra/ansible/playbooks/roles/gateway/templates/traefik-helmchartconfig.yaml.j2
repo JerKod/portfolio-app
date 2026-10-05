@@ -1,0 +1,16 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    providers:
+      kubernetesGateway:
+        enabled: true
+    gateway:
+      enabled: false   # on gère le Gateway nous-même via GitOps/Ansible, pas via le chart
+    metrics:
+      prometheus:
+        serviceMonitor:
+          enabled: true   # observabilité déjà prête

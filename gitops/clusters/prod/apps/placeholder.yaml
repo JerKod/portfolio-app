@@ -1,0 +1,17 @@
+# temporaire, à supprimer plus tard
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: placeholder
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/JerKod/portfolio-app.git
+    targetRevision: main
+    path: gitops/platform/placeholder
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
