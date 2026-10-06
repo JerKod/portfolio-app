@@ -5,7 +5,7 @@ on:
     paths: ["api/**"]
   push:
     branches: [main]
-    paths: ["api/**"]
+    paths: ["api/**", ".github/workflows/ci-api.yml"]
   release:
     types: [published]
 
