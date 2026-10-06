@@ -5,7 +5,7 @@ on:
     paths: ["web/**"]
   push:
     branches: [main]
-    paths: ["web/**"]
+    paths: ["web/**", ".github/workflows/ci-web.yml"]
   release:
     types: [published]
 
@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: web
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

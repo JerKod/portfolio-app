@@ -1,5 +1,5 @@
 # --- Étape 1 : construire le site avec Astro ---
-FROM node:24-alpine AS build
+FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 WORKDIR /app
 
 # Reçus depuis l'extérieur (GitHub Actions, ou --build-arg en local) :
