@@ -27,4 +27,5 @@ RUN npm run build
 # "non-root partout" qu'on a posé dès le début du projet
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx/absolute-redirect-off.conf /etc/nginx/conf.d/absolute-redirect-off.conf
 EXPOSE 8080

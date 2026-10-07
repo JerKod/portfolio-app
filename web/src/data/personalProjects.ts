@@ -24,7 +24,7 @@ export const personalProjects: PersonalProject[] = [
       "Designing the target infrastructure as code: a k3s cluster on Oracle Cloud's free tier, provisioned with Terraform and Ansible, deployed via GitOps (Argo CD) from GitHub Actions, with Prometheus/Grafana observability — in progress, tracked openly on the project page.",
     ],
     techIds: ["astro", "python", "fastapi", "docker"],
-    caseStudyUrl: "/projects/portfolio",
+    caseStudyUrl: "/projects/portfolio/",
   },
 ];
 
