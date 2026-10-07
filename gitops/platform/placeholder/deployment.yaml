@@ -13,6 +13,7 @@ spec:
       containers:
         - name: web
           image: ghcr.io/jerkod/portfolio-web:edge
+          imagePullPolicy: Always
           ports: [{ containerPort: 8080 }]   # port exposé par nginx-unprivileged dans web/Dockerfile
           readinessProbe:
             httpGet: { path: /, port: 8080 }
