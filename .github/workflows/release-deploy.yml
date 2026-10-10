@@ -1,0 +1,45 @@
+name: release-deploy
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-image-tags:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Compute the short SHA for this release's commit
+        id: sha
+        run: echo "short=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Update image tags in the Argo CD Application
+        run: |
+          yq -i '
+            (.spec.source.helm.parameters[] | select(.name == "web.image.tag").value) = "${{ steps.sha.outputs.short }}" |
+            (.spec.source.helm.parameters[] | select(.name == "api.image.tag").value) = "${{ steps.sha.outputs.short }}"
+          ' gitops/clusters/prod/apps/portfolio.yaml
+
+      - name: Open a pull request with the tag bump
+        id: pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: deploy release ${{ github.event.release.tag_name }}"
+          title: "Deploy release ${{ github.event.release.tag_name }}"
+          body: |
+            Automated image tag bump for release [${{ github.event.release.tag_name }}](${{ github.event.release.html_url }}).
+
+            Image tag: `${{ steps.sha.outputs.short }}`
+          branch: "release-deploy/${{ github.event.release.tag_name }}"
+          delete-branch: true
+
+      - name: Enable auto-merge
+        if: steps.pr.outputs.pull-request-number
+        run: gh pr merge --auto --squash "${{ steps.pr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
