@@ -11,3 +11,12 @@ spec:
     - name: http
       port: 8000
       protocol: HTTP
+      hostname: "{{ gateway_hostname }}"
+    - name: https
+      port: 8443
+      protocol: HTTPS
+      hostname: "{{ gateway_hostname }}"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: jerkod-tls

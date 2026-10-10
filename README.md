@@ -19,14 +19,14 @@ OCI Free Tier provisioning, secure access, and Kubernetes bootstrap.
   - Tailscale-first access patterns for remote admin workflows
   - a dedicated infra devcontainer with Terraform, Ansible, OCI CLI, `jq`, and
     `yq`
+  - K3s server/agent bootstrap.
+  - Security and baseline hardening on the guest OS layer.
+- CI/CD for Docker image builds
 
 ### 🚧 In progress
-
-- Finalizing OCI Always Free capacity checks and regional strategy.
-- Completing the k3s server/agent bootstrap flow and cluster join process.
-- Strengthening security and baseline hardening on the guest OS layer.
-- CI/CD improvements for Docker image builds and release automation.
+- HTTPS flow with Lets' Encrypt
 - Observability and deployment workflows for the running stack.
+- CD of the application and release automation.
 
 ## Repository structure
 

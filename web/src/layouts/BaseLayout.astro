@@ -27,23 +27,18 @@ const { title } = Astro.props;
   .page-grid {
     display: grid;
     grid-template-columns: 220px 1fr;
-    /* Chaque ligne entre guillemets = une rangée de la grille.
-       "banner banner" veut dire : la zone "banner" occupe
-       les deux colonnes de cette rangée.
-       "nav main" veut dire : sur cette rangée, la nav est dans
-       la colonne 1, le contenu dans la colonne 2.
-       "footer footer" : même principe que "banner", sur la
-       dernière rangée. */
+    /* Le hero et le contenu restent dans la colonne principale,
+       tandis que la navigation occupe la hauteur des deux rangées. */
     grid-template-areas:
       "banner banner"
+      "nav    hero"
       "nav    main"
       "footer footer";
     gap: 2rem;
     padding: 2rem 3rem;
   }
 
-  /* On assigne maintenant chaque élément à sa zone. */
-  /* ":global()" est nécessaire ici car StatusBanner, Sidebar, main et
+  /* ":global()" est nécessaire ici car StatusBanner, Sidebar, Hero, main et
      Footer ne sont pas écrits DANS ce fichier BaseLayout.astro — ce
      sont des composants externes qui arrivent via le <slot /> (ou,
      pour Footer, juste après). Par défaut, Astro n'applique le CSS
@@ -51,6 +46,7 @@ const { title } = Astro.props;
      :global() dit "applique aussi à l'extérieur". */
   .page-grid :global(.status-banner) { grid-area: banner; }
   .page-grid :global(.sidebar) { grid-area: nav; }
+  .page-grid :global(.hero) { grid-area: hero; }
   .page-grid :global(main) { grid-area: main; }
   .page-grid :global(.site-footer) { grid-area: footer; }
 
@@ -59,9 +55,12 @@ const { title } = Astro.props;
       grid-template-columns: 1fr;
       grid-template-areas:
         "banner"
+        "hero"
         "nav"
         "main"
         "footer";
+      padding: 1rem;
+      gap: 1rem;
     }
   }
 </style>

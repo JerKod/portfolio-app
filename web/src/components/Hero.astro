@@ -29,13 +29,9 @@ const pitch = "I came to engineering through a PhD in numerical simulation — a
     border-bottom: 1px solid var(--color-line);
   }
 
-  /* "1fr auto" : la colonne de texte prend tout l'espace disponible,
-     la colonne du panneau ne prend que sa largeur naturelle (260px,
-     fixée dans PulsePanel) — c'est ce qui empêche le panneau de
-     s'étirer sur toute la largeur de l'écran */
   .hero-grid {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
     align-items: start;
   }
@@ -73,13 +69,5 @@ const pitch = "I came to engineering through a PhD in numerical simulation — a
 
   .pitch {
     max-width: 60ch;
-  }
-
-  /* Sur mobile, le panneau passe sous le texte plutôt que
-     de forcer deux colonnes trop étroites pour être lisibles */
-  @media (max-width: 720px) {
-    .hero-grid {
-      grid-template-columns: 1fr;
-    }
   }
 </style>
