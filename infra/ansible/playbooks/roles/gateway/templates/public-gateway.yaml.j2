@@ -12,10 +12,16 @@ spec:
       port: 8000
       protocol: HTTP
       hostname: "{{ gateway_hostname }}"
+      allowedRoutes:
+        namespaces:
+          from: All
     - name: https
       port: 8443
       protocol: HTTPS
       hostname: "{{ gateway_hostname }}"
+      allowedRoutes:
+        namespaces:
+          from: All
       tls:
         mode: Terminate
         certificateRefs:
