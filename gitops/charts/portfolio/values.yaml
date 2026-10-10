@@ -1,0 +1,19 @@
+hostname: jerkod.is-a.dev
+
+web:
+  image:
+    repository: ghcr.io/jerkod/portfolio-web
+    tag: ""
+  replicas: 2
+  resources:
+    requests: { cpu: 10m, memory: 32Mi }
+    limits:   { cpu: 100m, memory: 96Mi }
+
+api:
+  image:
+    repository: ghcr.io/jerkod/portfolio-api
+    tag: ""
+  replicas: 2
+  resources:
+    requests: { cpu: 20m, memory: 64Mi }
+    limits:   { cpu: 100m, memory: 160Mi }
