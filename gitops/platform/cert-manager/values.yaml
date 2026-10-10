@@ -5,23 +5,3 @@ crds:
 # les défis ACME via une HTTPRoute (Gateway API), seulement via Ingress
 extraArgs:
   - --enable-gateway-api
-
-extraObjects:
-  - apiVersion: cert-manager.io/v1
-    kind: ClusterIssuer
-    metadata:
-      name: letsencrypt-prod
-    spec:
-      acme:
-        server: https://acme-v02.api.letsencrypt.org/directory
-        email: 300387198+JerKod@users.noreply.github.com
-        privateKeySecretRef:
-          name: letsencrypt-prod-key
-        solvers:
-          - http01:
-              gatewayHTTPRoute:
-                parentRefs:
-                  - name: public
-                    namespace: default
-                    kind: Gateway
-                    sectionName: http
