@@ -12,15 +12,15 @@ spec:
     helm:
       parameters:
         - name: web.image.tag
-          value: "sha-c1358a0"
+          value: "sha-ef82ec9"
         - name: api.image.tag
-          value: "sha-8faadbd"
+          value: "sha-ef82ec9"
   destination:
     server: https://kubernetes.default.svc
     namespace: portfolio
   syncPolicy:
-    automated: { prune: true, selfHeal: true }
+    automated: {prune: true, selfHeal: true}
     syncOptions: ["CreateNamespace=true"]
     retry:
       limit: 10
-      backoff: { duration: 15s, factor: 2, maxDuration: 3m }
+      backoff: {duration: 15s, factor: 2, maxDuration: 3m}
