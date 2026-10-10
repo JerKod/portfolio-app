@@ -19,3 +19,10 @@
     state: present
     apply: true
     definition: "{{ lookup('template', 'public-gateway.yaml.j2') }}"
+
+- name: Apply the HTTP-to-HTTPS redirect HTTPRoute
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    apply: true
+    definition: "{{ lookup('template', 'https-redirect.yaml.j2') }}"

@@ -27,6 +27,18 @@ Keep edits scoped to the correct service and preserve the existing architecture.
 - Keep changes small, reviewable, and aligned with the current project phase.
 - Use conventional commit-style intent (`feat:`, `fix:`, `docs:`), but do not force a commit unless the user asks.
 
+## Evidence-based project guidance
+
+- Base release notes, feature summaries, and product-facing descriptions on the actual repository state in `README.md`, service docs, and the current working tree; do not use generic wording that is not supported by the project.
+- Prefer concrete repo evidence over assumptions when describing implemented work, architecture, or operational status.
+- If a request is about improvement or modernization, trace the related repo files and current implementation before proposing changes.
+
+## History-aware improvement workflow
+
+- When asked to improve a session, review the relevant session transcript and repo context before proposing a fix or rewrite.
+- Look for repeated mistakes, failed validation loops, user corrections, or misunderstood assumptions before making recommendations.
+- Treat user redirection as the strongest signal of friction and use it to refine the proposed guidance.
+
 ## Service boundaries
 
 - `web/` owns the Astro frontend. Content and structured data should live in `src/data/*.ts`, and tokens should stay in `src/styles/tokens.css` unless there is a clear need otherwise.
