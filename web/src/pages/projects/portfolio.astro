@@ -7,15 +7,27 @@ import ComingSoon from "../../components/ComingSoon.astro";
 import { resolveTechs } from "../../data/technologies";
 
 // Ce qui est réellement construit aujourd'hui
-const appStack = resolveTechs(["astro", "python", "fastapi", "docker", "tailwind"]);
+const appStack = resolveTechs([
+  "astro",
+  "python",
+  "fastapi",
+  "docker",
+  "tailwind",
+]);
 
 // Ce qui est prévu par la doc du projet, pas encore construit
-const plannedInfra = resolveTechs(["oraclecloud", "k3s", "terraform", "ansible"]);
+const plannedInfra = resolveTechs([
+  "oraclecloud",
+  "k3s",
+  "terraform",
+  "ansible",
+]);
 const plannedCiCd = resolveTechs(["githubactions", "argocd"]);
 const plannedObservability = resolveTechs(["prometheus", "grafana"]);
 
 const repoUrl = "https://github.com/JerKod/portfolio-app";
 ---
+
 <BaseLayout title="Portfolio SRE — Technical Overview">
   <Sidebar />
   <main>
@@ -23,19 +35,22 @@ const repoUrl = "https://github.com/JerKod/portfolio-app";
     <p class="intro">
       This portfolio is itself an infrastructure project: a self-hosted platform
       running on a free-tier cloud, provisioned and deployed entirely as code.
-      It's being built in public, in stages — here's exactly where it stands today.
+      It's being built in public, in stages — here's exactly where it stands
+      today.
     </p>
 
     <Section id="application" title="Application">
       <p>
         The site you're browsing right now: an Astro frontend and a FastAPI
-        backend, developed in a fully containerized dev environment (VS Code
-        Dev Containers), with no tooling installed on the host machine.
+        backend, developed in a fully containerized dev environment (VS Code Dev
+        Containers), with no tooling installed on the host machine.
       </p>
       <div class="badge-row">
-        {appStack.map((tech) => (
-          <TechBadge name={tech.icon} label={tech.label} />
-        ))}
+        {
+          appStack.map((tech) => (
+            <TechBadge name={tech.icon} label={tech.label} />
+          ))
+        }
       </div>
       <p class="repo-link">
         <a href={repoUrl} target="_blank" rel="noopener noreferrer">
@@ -49,13 +64,13 @@ const repoUrl = "https://github.com/JerKod/portfolio-app";
         The plan: a k3s cluster on Oracle Cloud's free tier, fully provisioned
         with Terraform and configured with Ansible — no manual server setup.
       </p>
-      <ComingSoon label="Not built yet">
-        <div class="badge-row">
-          {plannedInfra.map((tech) => (
+      <div class="badge-row">
+        {
+          plannedInfra.map((tech) => (
             <TechBadge name={tech.icon} label={tech.label} />
-          ))}
-        </div>
-      </ComingSoon>
+          ))
+        }
+      </div>
     </Section>
 
     <Section id="ci-cd" title="CI/CD">
@@ -63,13 +78,13 @@ const repoUrl = "https://github.com/JerKod/portfolio-app";
         The plan: every push builds, tests, and ships a signed container image;
         Argo CD then syncs the cluster to match what's declared in Git.
       </p>
-      <ComingSoon label="Not built yet">
-        <div class="badge-row">
-          {plannedCiCd.map((tech) => (
+      <div class="badge-row">
+        {
+          plannedCiCd.map((tech) => (
             <TechBadge name={tech.icon} label={tech.label} />
-          ))}
-        </div>
-      </ComingSoon>
+          ))
+        }
+      </div>
     </Section>
 
     <Section id="observability" title="Observability">
@@ -79,9 +94,11 @@ const repoUrl = "https://github.com/JerKod/portfolio-app";
       </p>
       <ComingSoon label="Not built yet">
         <div class="badge-row">
-          {plannedObservability.map((tech) => (
-            <TechBadge name={tech.icon} label={tech.label} />
-          ))}
+          {
+            plannedObservability.map((tech) => (
+              <TechBadge name={tech.icon} label={tech.label} />
+            ))
+          }
         </div>
       </ComingSoon>
     </Section>
