@@ -11,11 +11,9 @@ spec:
     metadata:
       labels: { app: portfolio-web }
     spec:
-      # Force la répartition sur des nœuds différents — aucun intérêt
-      # à avoir 2 réplicas si les deux peuvent finir sur le même nœud
       affinity:
         podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
+          preferredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels: { app: portfolio-web }
               topologyKey: kubernetes.io/hostname
