@@ -26,7 +26,7 @@ async def track_requests(request: Request, call_next):
         ERRORS_TOTAL += 1
     return response
 
-@app.get("/healthz")
+@app.get("/api/healthz")
 def healthz() -> dict[str, str]:
     return {"status": "ok"}
 

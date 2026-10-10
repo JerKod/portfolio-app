@@ -1,81 +1,93 @@
 # Portfolio & SRE Lab
 
-A personal portfolio project built as a real-world infrastructure exercise: an
-Astro frontend, a FastAPI status API, and a dedicated infrastructure layer for
-OCI Free Tier provisioning, secure access, and Kubernetes bootstrap.
+A personal portfolio and platform engineering project. It combines an Astro
+frontend, a FastAPI metrics API, and infrastructure-as-code and GitOps
+configuration for running the application on Kubernetes running on
+[OCI Free-Tier](https://www.oracle.com/cloud/free/).
 
-## Current status
 
-### ✅ Implemented
+## What is in the repository
 
-- Astro portfolio site in [`web/`](./web) with structured content modules and
-  reusable components.
-- FastAPI backend in [`api/`](./api) serving health and operational metrics.
-- Shared development environment in [`.devcontainer/`](.devcontainer) with
-  dedicated service-specific containers for web, API, and infra work.
-- Infrastructure foundation in [`infra/`](./infra), including:
-  - Terraform for OCI resource provisioning and network/storage layout
-  - Ansible for VM hardening and k3s prerequisite setup
-  - Tailscale-first access patterns for remote admin workflows
-  - a dedicated infra devcontainer with Terraform, Ansible, OCI CLI, `jq`, and
-    `yq`
-  - K3s server/agent bootstrap.
-  - Security and baseline hardening on the guest OS layer.
-- CI/CD for Docker image builds
+### Portfolio application
 
-### 🚧 In progress
-- HTTPS flow with Lets' Encrypt
-- Observability and deployment workflows for the running stack.
-- CD of the application and release automation.
+- `web/` contains the Astro and Tailwind CSS site. Portfolio content is
+  organized in `web/src/data/`, and the site is built as static files served
+  by an unprivileged Nginx container.
+- `api/` contains a FastAPI service for health and lightweight operational
+  metrics. Its in-memory counters and request history reset when the process
+  restarts; there is no database for now.
+- The frontend fetches API metrics after the page loads, so it can be built
+  without the API running.
+
+The API currently exposes:
+
+- `GET /api/healthz` — health check
+- `GET /api/status` — process uptime, request count, and a simple success
+  percentage based on responses that did not return a 5xx status
+- `GET /api/pulse` — request counts in one-minute buckets over the previous
+  15 minutes
+
+### Infrastructure and deployment configuration
+
+- `infra/terraform/envs/prod/` defines OCI networking, two Ubuntu ARM K3s
+  nodes, attached data volumes, a public load balancer, and an Object Storage
+  bucket for backups and Terraform tfstate.
+- `infra/ansible/` contains playbooks for host hardening, Tailscale access,
+  K3s, persistent storage, Gateway API/Traefik, and Argo CD bootstrap.
+- `gitops/` contains the portfolio Helm chart and Argo CD applications for the
+  portfolio, cert-manager, its Let's Encrypt production issuer, Longhorn, and
+  Velero. The portfolio is routed through Gateway API with HTTPS.
+- `.devcontainer/` provides separate web, API, and infrastructure
+  development containers, sharing a Compose configuration.
+
+### Automation
+
+- `.github/workflows/ci-web.yml` and `ci-api.yml` build and validate their
+  respective services, then build multi-platform container images. Images are
+  pushed to GitHub Container Registry on pushes to `main` and published
+  releases; pull requests run the checks and image builds without pushing.
+- `.github/workflows/release-deploy.yml` proposes a GitOps image-tag update
+  pull request for a published release and requests auto-merge.
+- `.github/workflows/infra.yml` plans Terraform changes for pull requests.
+  For changes pushed to `main`, it applies the reviewed plan after the
+  production environment's approval gate, then runs the Ansible configuration
+  and Argo CD bootstrap playbooks.
+
+These files describe the configured automation and desired infrastructure;
+their presence does not by itself confirm that a workflow has succeeded or
+that the production cluster currently matches the repository.
+
+## Development
+
+Use the service-specific devcontainers and documentation:
+
+- [Frontend guide](./web/README.md) — run `npm run dev -- --host 0.0.0.0`
+  from `web/`; the site is available on port 4321.
+- [API guide](./api/README.md) — run
+  `uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000`
+  from `api/`.
+- [Infrastructure guide](./infra/README.md) — Tailscale access to the OCI
+  nodes and infrastructure workflow.
+
+For infrastructure-specific commands, use the project infra devcontainer.
+OCI credentials, Tailscale credentials, and other secrets must be supplied
+outside version control. Check OCI account limits, regional capacity, and
+current Always Free eligibility before provisioning resources.
 
 ## Repository structure
 
-- [`web/`](./web) — Astro frontend and portfolio content
-- [`api/`](./api) — FastAPI service with health and metrics endpoints
-- [`infra/`](./infra) — Terraform and Ansible for OCI, Tailscale, and k3s prep
-- [`.devcontainer/`](.devcontainer) — workspace and infra dev container setup
-- [`.github/`](.github) — repo-level agent instructions and workflow config
-
-## Getting started
-
-1. Install [Docker Engine](https://docs.docker.com/engine/install/) and the
-   [Dev Containers VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
-2. Open this folder in VS Code and run **Dev Containers: Reopen in Container**.
-3. Use the service-specific docs:
-   - [`web/README.md`](./web/README.md)
-   - [`api/README.md`](./api/README.md)
-   - [`infra/README.md`](./infra/README.md)
-
-## Service highlights
-
-### Frontend
-
-The web app is built to work independently from the API service. Status panels
-and metrics fetch client-side after page load, which keeps the site buildable
-without requiring the backend to be running.
-
-### Backend
-
-The API exposes lightweight operational data, including:
-
-- health checks
-- uptime and SLO status
-- request-rate pulse data
-
-This remains intentionally in-memory for the current phase, while preserving a
-stable response shape for later backend evolution.
-
-### Infrastructure
-
-The infrastructure layer is intentionally split by ownership:
-
-- Terraform owns OCI resource provisioning and stateful cloud configuration.
-- Ansible owns VM setup, hardening, and k3s-related bootstrap steps.
-- Tailscale is used as the secure admin path for remote access to the nodes.
+- [`web/`](./web) — Astro frontend, components, content, and static-site image
+- [`api/`](./api) — FastAPI application and container image
+- [`infra/`](./infra) — Terraform for OCI and Ansible for hosts and K3s
+- [`gitops/`](./gitops) — Helm chart and Argo CD application configuration
+- [`.devcontainer/`](./.devcontainer) — service-specific development containers
+- [`.github/workflows/`](./.github/workflows) — CI, release, and infrastructure workflows
 
 ## Tech stack
 
-Astro · FastAPI · Docker · Terraform · Ansible · OCI · Tailscale · k3s
+Astro · Tailwind CSS · FastAPI · Docker · Nginx · GitHub Actions · GHCR ·
+Terraform · Ansible · OCI · Tailscale · K3s · Argo CD · Helm · Gateway API ·
+Traefik · cert-manager · Longhorn · Velero
 
 ## License
 

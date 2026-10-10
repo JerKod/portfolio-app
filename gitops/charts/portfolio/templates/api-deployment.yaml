@@ -23,10 +23,10 @@ spec:
           ports: [{ containerPort: 8000 }]
           resources: {{ .Values.api.resources | toYaml | nindent 12 }}
           readinessProbe:
-            httpGet: { path: /healthz, port: 8000 }
+            httpGet: { path: /api/healthz, port: 8000 }
             initialDelaySeconds: 3
             periodSeconds: 5
           livenessProbe:
-            httpGet: { path: /healthz, port: 8000 }
+            httpGet: { path: /api/healthz, port: 8000 }
             initialDelaySeconds: 10
             periodSeconds: 10
