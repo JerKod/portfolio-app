@@ -1,16 +1,18 @@
 prometheus: { enabled: false }
 alertmanager: { enabled: false }
 grafana: { enabled: false }
+prometheusOperator: { enabled: false }
+kubeApiServer: { enabled: false }
+kubelet: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }
+kubeEtcd: { enabled: false }
+coreDns: { enabled: false }
+kubeDns: { enabled: false }
 
 kubeStateMetrics:
   resources: { requests: { cpu: 10m, memory: 32Mi }, limits: { cpu: 50m, memory: 64Mi } }
 
 prometheus-node-exporter:
   resources: { requests: { cpu: 10m, memory: 16Mi }, limits: { cpu: 30m, memory: 32Mi } }
-
-kubeEtcd: { enabled: false }
-kubeControllerManager: { enabled: false }
-kubeScheduler: { enabled: false }
-kubeProxy: { enabled: false }
-prometheusOperator: { enabled: false }
-kubelet: { enabled: false }

@@ -85,3 +85,8 @@ alloy:
 
 controller:
   type: daemonset
+  volumes:
+    extra:
+      - name: host-journal
+        hostPath:
+          path: /var/log/journal
