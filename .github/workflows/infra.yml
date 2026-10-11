@@ -148,3 +148,11 @@ jobs:
         env:
           VELERO_ACCESS_KEY: ${{ secrets.OCI_VELERO_ACCESS_KEY }}
           VELERO_SECRET_KEY: ${{ secrets.OCI_VELERO_SECRET_KEY }}
+
+      - name: Bootstrap Grafana Cloud credentials
+        run: ansible-playbook -i inventories/prod/hosts.yml playbooks/grafana_cloud_credentials.yml
+        env:
+          GRAFANA_CLOUD_PROM_ID: ${{ secrets.GRAFANA_CLOUD_PROM_ID }}
+          GRAFANA_CLOUD_LOKI_ID: ${{ secrets.GRAFANA_CLOUD_LOKI_ID }}
+          GRAFANA_CLOUD_TEMPO_ID: ${{ secrets.GRAFANA_CLOUD_TEMPO_ID }}
+          GRAFANA_CLOUD_API_TOKEN: ${{ secrets.GRAFANA_CLOUD_API_TOKEN }}

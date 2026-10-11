@@ -1,0 +1,5 @@
+---
+grafana_cloud_api_token: "{{ lookup('env', 'GRAFANA_CLOUD_API_TOKEN') }}"
+grafana_cloud_loki_id: "{{ lookup('env', 'GRAFANA_CLOUD_LOKI_ID') }}"
+grafana_cloud_tempo_id: "{{ lookup('env', 'GRAFANA_CLOUD_TEMPO_ID') }}"
+grafana_cloud_prom_id: "{{ lookup('env', 'GRAFANA_CLOUD_PROM_ID') }}"

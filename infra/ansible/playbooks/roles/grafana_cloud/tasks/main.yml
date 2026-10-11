@@ -1,0 +1,26 @@
+---
+- name: Ensure the monitoring namespace exists
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    api_version: v1
+    kind: Namespace
+    name: monitoring
+    state: present
+
+- name: Create the Grafana Cloud credentials secret
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: grafana-cloud-credentials
+        namespace: monitoring
+      type: Opaque
+      stringData:
+        api-token: "{{ grafana_cloud_api_token }}"
+        prom-instance-id: "{{ grafana_cloud_prom_id }}"
+        loki-instance-id: "{{ grafana_cloud_loki_id }}"
+        tempo-instance-id: "{{ grafana_cloud_tempo_id }}"
+  no_log: true
