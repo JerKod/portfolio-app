@@ -1,0 +1,87 @@
+alloy:
+  resources:
+    requests: { cpu: 10m, memory: 64Mi }
+    limits: { cpu: 100m, memory: 160Mi }
+    extraEnv:
+    - name: GRAFANA_CLOUD_API_TOKEN
+      valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: api-token } }
+    - name: GRAFANA_CLOUD_PROM_ID
+      valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: prom-instance-id } }
+    - name: GRAFANA_CLOUD_LOKI_ID
+      valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: loki-instance-id } }
+    - name: GRAFANA_CLOUD_TEMPO_ID
+      valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: tempo-instance-id } }
+  configMap:
+    content: |
+      // --- Métriques : exporters + kube-state-metrics + l'app ---
+      prometheus.scrape "kubernetes" {
+        targets = concat(
+          discovery.kubernetes.pods.targets,
+        )
+        forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+      }
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      prometheus.remote_write "grafana_cloud" {
+        endpoint {
+          url = "https://prometheus-prod-65-prod-eu-west-2.grafana.net/api/prom/push"
+          basic_auth {
+            username = env("GRAFANA_CLOUD_PROM_ID")
+            password = env("GRAFANA_CLOUD_API_TOKEN")
+          }
+        }
+      }
+
+      // --- Logs : journal système des 2 VM + logs des pods ---
+      loki.source.journal "host" {
+        forward_to = [loki.write.grafana_cloud.receiver]
+      }
+
+      discovery.kubernetes "pod_logs" { role = "pod" }
+      loki.source.kubernetes "pods" {
+        targets    = discovery.kubernetes.pod_logs.targets
+        forward_to = [loki.write.grafana_cloud.receiver]
+      }
+
+      loki.write "grafana_cloud" {
+        endpoint {
+          url = "https://logs-prod-012.grafana.net/loki/api/v1/push"
+          basic_auth {
+            username = env("GRAFANA_CLOUD_LOKI_ID")
+            password = env("GRAFANA_CLOUD_API_TOKEN")
+          }
+        }
+      }
+
+      // --- Traces : reçues de portfolio-api, relayées vers Tempo ---
+      otelcol.receiver.otlp "default" {
+        grpc { endpoint = "0.0.0.0:4317" }
+        output { traces = [otelcol.exporter.otlp.grafana_cloud.input] }
+      }
+
+      otelcol.exporter.otlp "grafana_cloud" {
+        client {
+          endpoint = "tempo-prod-10-prod-eu-west-2.grafana.net:443"
+          auth     = otelcol.auth.basic.grafana_cloud.handler
+        }
+      }
+
+      otelcol.auth.basic "grafana_cloud" {
+        username = env("GRAFANA_CLOUD_TEMPO_ID")
+        password = env("GRAFANA_CLOUD_API_TOKEN")
+      }
+
+  mounts:
+    extra:
+      - name: host-journal
+        mountPath: /var/log/journal
+        readOnly: true
+  extraVolumes:
+    - name: host-journal
+      hostPath: { path: /var/log/journal }
+
+controller:
+  type: daemonset
