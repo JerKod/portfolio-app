@@ -2,7 +2,8 @@ alloy:
   resources:
     requests: { cpu: 10m, memory: 64Mi }
     limits: { cpu: 100m, memory: 160Mi }
-    extraEnv:
+
+  extraEnv:
     - name: GRAFANA_CLOUD_API_TOKEN
       valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: api-token } }
     - name: GRAFANA_CLOUD_PROM_ID
@@ -11,6 +12,7 @@ alloy:
       valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: loki-instance-id } }
     - name: GRAFANA_CLOUD_TEMPO_ID
       valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: tempo-instance-id } }
+
   configMap:
     content: |
       // --- Métriques : exporters + kube-state-metrics + l'app ---
