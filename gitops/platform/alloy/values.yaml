@@ -56,24 +56,6 @@ alloy:
         }
       }
 
-      // --- Traces : reçues de portfolio-api, relayées vers Tempo ---
-      otelcol.receiver.otlp "default" {
-        grpc { endpoint = "0.0.0.0:4317" }
-        output { traces = [otelcol.exporter.otlp.grafana_cloud.input] }
-      }
-
-      otelcol.exporter.otlp "grafana_cloud" {
-        client {
-          endpoint = "tempo-prod-10-prod-eu-west-2.grafana.net:443"
-          auth     = otelcol.auth.basic.grafana_cloud.handler
-        }
-      }
-
-      otelcol.auth.basic "grafana_cloud" {
-        username = env("GRAFANA_CLOUD_TEMPO_ID")
-        password = env("GRAFANA_CLOUD_API_TOKEN")
-      }
-
   mounts:
     extra:
       - name: host-journal
