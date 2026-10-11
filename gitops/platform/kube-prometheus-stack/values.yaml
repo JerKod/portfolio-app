@@ -12,3 +12,5 @@ kubeEtcd: { enabled: false }
 kubeControllerManager: { enabled: false }
 kubeScheduler: { enabled: false }
 kubeProxy: { enabled: false }
+prometheusOperator: { enabled: false }
+kubelet: { enabled: false }
