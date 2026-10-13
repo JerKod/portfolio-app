@@ -15,6 +15,8 @@ alloy:
 
   configMap:
     content: |
+      // ========== MÉTRIQUES ==========
+
       discovery.kubernetes "pods" {
         role = "pod"
       }
@@ -28,7 +30,6 @@ alloy:
           action        = "keep"
         }
 
-        // Remplace l'IP:port par défaut par le vrai nom du nœud
         rule {
           source_labels = ["__meta_kubernetes_pod_node_name"]
           target_label  = "instance"
@@ -41,14 +42,21 @@ alloy:
         forward_to      = [prometheus.relabel.drop_noise.receiver]
       }
 
-      // Filtre fin : métriques kube-state-metrics peu utiles
       prometheus.relabel "drop_noise" {
         forward_to = [prometheus.remote_write.grafana_cloud.receiver]
 
+        // Liste blanche unique : seules ces métriques survivent
         rule {
           source_labels = ["__name__"]
-          regex         = "kube_pod_tolerations|kube_pod_status_qos_class|kube_pod_status_ready|kube_pod_status_scheduled"
-          action        = "drop"
+          regex         = "node_cpu_seconds_total|node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes|node_filesystem_avail_bytes|node_filesystem_size_bytes|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_load1|node_load5|node_load15|node_disk_read_bytes_total|node_disk_written_bytes_total|kube_pod_status_phase|kube_pod_info|kube_pod_container_status_restarts_total|kube_deployment_status_replicas_available|kube_node_status_condition"
+          action        = "keep"
+        }
+
+        // uid : identifiant interne k8s, jamais utilisé pour filtrer/grouper.
+        // pod_ip : change à chaque redémarrage/reschedule
+        rule {
+          action = "labeldrop"
+          regex  = "uid|pod_ip"
         }
       }
 
@@ -62,12 +70,14 @@ alloy:
         }
       }
 
-      // --- Logs : journal système des 2 VM + logs des pods ---
+      // ========== LOGS ==========
+
       loki.source.journal "host" {
         forward_to = [loki.write.grafana_cloud.receiver]
       }
 
       discovery.kubernetes "pod_logs" { role = "pod" }
+
       loki.source.kubernetes "pods" {
         targets    = discovery.kubernetes.pod_logs.targets
         forward_to = [loki.write.grafana_cloud.receiver]
@@ -81,6 +91,26 @@ alloy:
             password = env("GRAFANA_CLOUD_API_TOKEN")
           }
         }
+      }
+
+      // ========== TRACES (pipeline prêt, aucune donnée tant que
+      // portfolio-api n'est pas instrumenté — itération suivante) ==========
+
+      otelcol.receiver.otlp "default" {
+        grpc { endpoint = "0.0.0.0:4317" }
+        output { traces = [otelcol.exporter.otlp.grafana_cloud.input] }
+      }
+
+      otelcol.exporter.otlp "grafana_cloud" {
+        client {
+          endpoint = "tempo-prod-10-prod-eu-west-2.grafana.net:443"
+          auth     = otelcol.auth.basic.grafana_cloud.handler
+        }
+      }
+
+      otelcol.auth.basic "grafana_cloud" {
+        username = env("GRAFANA_CLOUD_TEMPO_ID")
+        password = env("GRAFANA_CLOUD_API_TOKEN")
       }
 
   mounts:
