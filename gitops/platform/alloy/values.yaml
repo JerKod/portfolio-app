@@ -17,46 +17,101 @@ alloy:
     content: |
       // ========== MÉTRIQUES ==========
 
-      discovery.kubernetes "pods" {
-        role = "pod"
-      }
+      // --- node-exporter ---
+      discovery.kubernetes "pods" { role = "pod" }
 
-      discovery.relabel "exporters_only" {
+      discovery.relabel "node_exporter" {
         targets = discovery.kubernetes.pods.targets
-
         rule {
           source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
-          regex         = "(prometheus-node-exporter|kube-state-metrics)"
+          regex         = "prometheus-node-exporter"
           action        = "keep"
         }
-
         rule {
           source_labels = ["__meta_kubernetes_pod_node_name"]
           target_label  = "instance"
         }
       }
 
-      prometheus.scrape "kubernetes" {
-        targets         = discovery.relabel.exporters_only.output
-        scrape_interval = "60s"
+      prometheus.scrape "node_exporter" {
+        targets         = discovery.relabel.node_exporter.output
+        job_name        = "node-exporter"
+        scrape_interval = "90s"
         forward_to      = [prometheus.relabel.drop_noise.receiver]
       }
 
+      // --- kube-state-metrics ---
+      discovery.relabel "ksm" {
+        targets = discovery.kubernetes.pods.targets
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          regex         = "kube-state-metrics"
+          action        = "keep"
+        }
+      }
+
+      prometheus.scrape "ksm" {
+        targets         = discovery.relabel.ksm.output
+        job_name        = "kube-state-metrics"
+        scrape_interval = "90s"
+        forward_to      = [prometheus.relabel.drop_noise.receiver]
+      }
+
+      // --- cAdvisor (via le proxy de l'API server) ---
+      discovery.kubernetes "nodes" { role = "node" }
+
+      discovery.relabel "cadvisor" {
+        targets = discovery.kubernetes.nodes.targets
+
+        // Toutes les requêtes passent par le proxy de l'API server,
+        // jamais directement vers l'IP du kubelet
+        rule {
+          target_label = "__address__"
+          replacement  = "kubernetes.default.svc:443"
+        }
+
+        // __metrics_path__ : UNIQUEMENT le chemin relatif
+        rule {
+          source_labels = ["__meta_kubernetes_node_name"]
+          regex         = "(.+)"
+          target_label  = "__metrics_path__"
+          replacement   = "/api/v1/nodes/${1}/proxy/metrics/cadvisor"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_node_name"]
+          target_label  = "instance"
+        }
+      }
+
+      prometheus.scrape "cadvisor" {
+        targets           = discovery.relabel.cadvisor.output
+        job_name          = "cadvisor"
+        scheme            = "https"
+        bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        scrape_interval   = "90s"
+
+        tls_config {
+          ca_file     = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+          server_name = "kubernetes"
+        }
+
+        forward_to = [prometheus.relabel.drop_noise.receiver]
+      }
+
+      // --- Filtre commun : liste blanche + nettoyage de cardinalité ---
       prometheus.relabel "drop_noise" {
         forward_to = [prometheus.remote_write.grafana_cloud.receiver]
 
-        // Liste blanche unique : seules ces métriques survivent
         rule {
           source_labels = ["__name__"]
-          regex         = "node_cpu_seconds_total|node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes|node_filesystem_avail_bytes|node_filesystem_size_bytes|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_load1|node_load5|node_load15|node_disk_read_bytes_total|node_disk_written_bytes_total|kube_pod_status_phase|kube_pod_info|kube_pod_container_status_restarts_total|kube_deployment_status_replicas_available|kube_node_status_condition"
+          regex         = "node_cpu_seconds_total|node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes|node_filesystem_avail_bytes|node_filesystem_size_bytes|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_load1|node_load5|node_load15|node_disk_read_bytes_total|node_disk_written_bytes_total|kube_pod_status_phase|kube_pod_info|kube_pod_container_status_restarts_total|kube_pod_container_status_running|kube_pod_container_resource_requests|kube_pod_container_resource_limits|kube_node_status_condition|kube_namespace_created|container_cpu_usage_seconds_total|container_memory_working_set_bytes|container_network_receive_bytes_total|container_network_transmit_bytes_total|container_fs_writes_total|machine_cpu_cores|machine_memory_bytes"
           action        = "keep"
         }
 
-        // uid : identifiant interne k8s, jamais utilisé pour filtrer/grouper.
-        // pod_ip : change à chaque redémarrage/reschedule
         rule {
           action = "labeldrop"
-          regex  = "uid|pod_ip"
+          regex  = "uid|pod_uid|container_id|pod_ip|host_ip"
         }
       }
 
