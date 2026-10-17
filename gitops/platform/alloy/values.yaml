@@ -198,7 +198,7 @@ rbac:
       verbs: ["get", "list", "watch"]
     # -- Rules required accessing metric endpoints on the Node (e.g. Kubelet, cAdvisor, etc...).
     - apiGroups: [""]
-      resources: ["nodes/metrics"]
+      resources: ["nodes/metrics","nodes/proxy"]
       verbs: ["get", "list", "watch"]
     # -- Rules required for accessing metrics endpoint.
     - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
