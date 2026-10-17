@@ -29,3 +29,24 @@ To connect to the VM k3s-server or k3s-agent over SSH via Tailscale from the inf
   # or
   ssh ubuntu@k3s-agent
   ```
+
+# Admin consoles
+
+## ArgoCD
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+Login: `admin`
+Password: get the password with the command `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
+
+## Longhorn
+
+```bash
+kubectl port-forward svc/longhorn-frontend -n longhorn-system 8081:80
+```
+
+## Alloy
+
+```bash
+kubectl port-forward -n monitoring ds/alloy 12345:12345
+```
