@@ -1,7 +1,7 @@
 alloy:
   resources:
     requests: { cpu: 10m, memory: 64Mi }
-    limits: { cpu: 100m, memory: 160Mi }
+    limits: { cpu: 100m, memory: 256Mi }
 
   extraEnv:
     - name: GRAFANA_CLOUD_API_TOKEN
@@ -129,6 +129,7 @@ alloy:
 
       loki.source.journal "host" {
         forward_to = [loki.write.grafana_cloud.receiver]
+        job_name    = "host-journal"
       }
 
       discovery.kubernetes "pod_logs" { role = "pod" }
@@ -136,6 +137,7 @@ alloy:
       loki.source.kubernetes "pods" {
         targets    = discovery.kubernetes.pod_logs.targets
         forward_to = [loki.write.grafana_cloud.receiver]
+        job_name   = "kubernetes-pods"
       }
 
       loki.write "grafana_cloud" {
@@ -176,6 +178,9 @@ alloy:
   extraVolumes:
     - name: host-journal
       hostPath: { path: /var/log/journal }
+  
+  securityContext:
+    supplementalGroups: [ 999 ]
 
 controller:
   type: daemonset
