@@ -185,5 +185,24 @@ alloy:
   mounts:
     varlog: true
 
+rbac:
+  create: true
+  clusterRules:
+    # -- Rules required for the Nodes role in the `discovery.kubernetes` component.
+    - apiGroups: [""]
+      resources: ["nodes"]
+      verbs: ["get", "list", "watch"]
+    # -- Rules required for the `discovery.kubelet` component.
+    - apiGroups: [""]
+      resources: ["nodes/pods"]
+      verbs: ["get", "list", "watch"]
+    # -- Rules required accessing metric endpoints on the Node (e.g. Kubelet, cAdvisor, etc...).
+    - apiGroups: [""]
+      resources: ["nodes/metrics"]
+      verbs: ["get", "list", "watch"]
+    # -- Rules required for accessing metrics endpoint.
+    - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+      verbs: ["get"]
+
 controller:
   type: daemonset
