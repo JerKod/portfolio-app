@@ -1,3 +1,8 @@
+global:
+  podSecurityContext:
+    # 999 est le GID standard de 'systemd-journal' sur Ubuntu d'OCI.
+    supplementalGroups: [ 999 ]
+
 alloy:
   resources:
     requests: { cpu: 10m, memory: 64Mi }
@@ -128,8 +133,16 @@ alloy:
       // ========== LOGS ==========
 
       loki.source.journal "host" {
+        path       = "/var/log/journal"
+        forward_to = [loki.relabel.system_logs.receiver]
+      }
+
+      loki.relabel "system_logs" {
         forward_to = [loki.write.grafana_cloud.receiver]
-        job_name    = "host-journal"
+        rule {
+          target_label = "job"
+          replacement  = "host-journal"
+        }
       }
 
       discovery.kubernetes "pod_logs" { role = "pod" }
@@ -137,7 +150,6 @@ alloy:
       loki.source.kubernetes "pods" {
         targets    = discovery.kubernetes.pod_logs.targets
         forward_to = [loki.write.grafana_cloud.receiver]
-        job_name   = "kubernetes-pods"
       }
 
       loki.write "grafana_cloud" {
@@ -171,21 +183,7 @@ alloy:
       }
 
   mounts:
-    extra:
-      - name: host-journal
-        mountPath: /var/log/journal
-        readOnly: true
-  extraVolumes:
-    - name: host-journal
-      hostPath: { path: /var/log/journal }
-  
-  securityContext:
-    supplementalGroups: [ 999 ]
+    varlog: true
 
 controller:
   type: daemonset
-  volumes:
-    extra:
-      - name: host-journal
-        hostPath:
-          path: /var/log/journal
