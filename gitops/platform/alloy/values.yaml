@@ -17,6 +17,10 @@ alloy:
       valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: loki-instance-id } }
     - name: GRAFANA_CLOUD_TEMPO_ID
       valueFrom: { secretKeyRef: { name: grafana-cloud-credentials, key: tempo-instance-id } }
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
 
   configMap:
     content: |
@@ -110,7 +114,7 @@ alloy:
 
         rule {
           source_labels = ["__name__"]
-          regex         = "node_cpu_seconds_total|node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes|node_filesystem_avail_bytes|node_filesystem_size_bytes|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_load1|node_load5|node_load15|node_disk_read_bytes_total|node_disk_written_bytes_total|kube_pod_status_phase|kube_pod_info|kube_pod_container_status_restarts_total|kube_pod_container_status_running|kube_pod_container_resource_requests|kube_pod_container_resource_limits|kube_node_status_condition|kube_namespace_created|container_cpu_usage_seconds_total|container_memory_working_set_bytes|container_network_receive_bytes_total|container_network_transmit_bytes_total|container_fs_writes_total|machine_cpu_cores|machine_memory_bytes"
+          regex         = "up|node_cpu_seconds_total|node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes|node_filesystem_avail_bytes|node_filesystem_size_bytes|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_load1|node_load5|node_load15|node_disk_read_bytes_total|node_disk_written_bytes_total|kube_pod_status_phase|kube_pod_info|kube_pod_container_status_restarts_total|kube_pod_container_status_running|kube_pod_container_resource_requests|kube_pod_container_resource_limits|kube_node_status_condition|kube_namespace_created|container_cpu_usage_seconds_total|container_memory_working_set_bytes|container_network_receive_bytes_total|container_network_transmit_bytes_total|container_fs_writes_total|machine_cpu_cores|machine_memory_bytes"
           action        = "keep"
         }
 
@@ -123,9 +127,23 @@ alloy:
 
         // --- Filtrage des interfaces réseau ---
         rule {
-          source_labels = ["device"]
-          regex         = "lo|enp.*"
-          action        = "keep"
+          source_labels = ["__name__", "device"]
+          regex         = "node_network_.*;(veth.*|cali.*|cni.*|flannel.*|lxc.*|docker.*|br-.*)"
+          action        = "drop"
+        }
+
+        // Filtrage des disques virtuels
+        rule {
+          source_labels = ["__name__", "device"]
+          regex         = "node_disk_.*;(loop.*|ram.*)"
+          action        = "drop"
+        }
+
+        // Filtrage des doublons de métriques container_* (déjà présentes dans kube-state-metrics)
+        rule {
+          source_labels = ["__name__", "namespace"]
+          regex         = "container_.*;"
+          action        = "drop"
         }
 
         // Nettoyage global des labels techniques inutiles
@@ -160,10 +178,8 @@ alloy:
         }
       }
 
-      discovery.kubernetes "pod_logs" { role = "pod" }
-
       discovery.relabel "pod_logs" {
-        targets = discovery.kubernetes.pod_logs.targets
+        targets = discovery.kubernetes.pods.targets
 
         // Extraire le namespace
         rule {
