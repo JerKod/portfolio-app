@@ -114,9 +114,24 @@ alloy:
           action        = "keep"
         }
 
+        // Filtrage des points de montage inutiles
+        rule {
+          source_labels = ["mountpoint"]
+          regex         = "/|/mnt/longhorn|/boot"
+          action        = "keep"
+        }
+
+        // --- Filtrage des interfaces réseau ---
+        rule {
+          source_labels = ["device"]
+          regex         = "lo|enp.*"
+          action        = "keep"
+        }
+
+        // Nettoyage global des labels techniques inutiles
         rule {
           action = "labeldrop"
-          regex  = "uid|pod_uid|container_id|pod_ip|host_ip"
+          regex  = "uid|pod_uid|container_id|pod_ip|host_ip|id"
         }
       }
 
@@ -147,8 +162,30 @@ alloy:
 
       discovery.kubernetes "pod_logs" { role = "pod" }
 
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pod_logs.targets
+
+        // Extraire le namespace
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+
+        // Extraire le nom du pod
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+
+        // Extraire le nom du conteneur
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+      }
+
       loki.source.kubernetes "pods" {
-        targets    = discovery.kubernetes.pod_logs.targets
+        targets    = discovery.relabel.pod_logs.output
         forward_to = [loki.write.grafana_cloud.receiver]
       }
 
