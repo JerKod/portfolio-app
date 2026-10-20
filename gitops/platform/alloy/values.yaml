@@ -36,6 +36,13 @@ alloy:
           regex         = "prometheus-node-exporter"
           action        = "keep"
         }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_node_name"]
+          regex         = env("NODE_NAME")
+          action        = "keep"
+        }
+
         rule {
           source_labels = ["__meta_kubernetes_pod_node_name"]
           target_label  = "instance"
@@ -71,6 +78,13 @@ alloy:
 
       discovery.relabel "cadvisor" {
         targets = discovery.kubernetes.nodes.targets
+
+        // Ne garder que le nœud local correspondant au pod Alloy
+        rule {
+          source_labels = ["__meta_kubernetes_node_name"]
+          regex         = env("NODE_NAME")
+          action        = "keep"
+        }
 
         // Toutes les requêtes passent par le proxy de l'API server,
         // jamais directement vers l'IP du kubelet
@@ -118,31 +132,23 @@ alloy:
           action        = "keep"
         }
 
-        // Filtrage des points de montage inutiles
+        // 2. Suppression des fstype / mountpoints indésirables (K3s, Tmpfs, Overlays)
+        rule {
+          source_labels = ["fstype"]
+          regex         = "tmpfs|overlay|aufs|squashfs|shm|efivarfs|sysfs|proc|cgroup2"
+          action        = "drop"
+        }
+
         rule {
           source_labels = ["mountpoint"]
-          regex         = "/|/mnt/longhorn|/boot"
-          action        = "keep"
-        }
-
-        // --- Filtrage des interfaces réseau ---
-        rule {
-          source_labels = ["__name__", "device"]
-          regex         = "node_network_.*;(veth.*|cali.*|cni.*|flannel.*|lxc.*|docker.*|br-.*)"
+          regex         = "/var/lib/kubelet/.*|/run/k3s/.*"
           action        = "drop"
         }
 
-        // Filtrage des disques virtuels
+        // 3. Suppression des interfaces réseau virtuelles (veth, cni, flannel, lo)
         rule {
-          source_labels = ["__name__", "device"]
-          regex         = "node_disk_.*;(loop.*|ram.*)"
-          action        = "drop"
-        }
-
-        // Filtrage des doublons de métriques container_* (déjà présentes dans kube-state-metrics)
-        rule {
-          source_labels = ["__name__", "namespace"]
-          regex         = "container_.*;"
+          source_labels = ["device"]
+          regex         = "lo|docker.*|veth.*|flannel.*|cni.*|br-.*|cali.*"
           action        = "drop"
         }
 
@@ -197,6 +203,12 @@ alloy:
         rule {
           source_labels = ["__meta_kubernetes_pod_container_name"]
           target_label  = "container"
+        }
+
+        // Extraire le label app.kubernetes.io/name
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          target_label  = "app"
         }
       }
 
