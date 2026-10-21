@@ -14,3 +14,12 @@ persistence:
 # Jamais exposé publiquement — même principe que pour Argo CD
 ingress:
   enabled: false
+
+longhornManager:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 1Gi
