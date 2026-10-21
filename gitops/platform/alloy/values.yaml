@@ -170,18 +170,55 @@ alloy:
       }
 
       // ========== LOGS ==========
+      loki.relabel "journal" {
+        // forward_to est obligatoire mais inutilisé
+        forward_to = []
+
+        // Hostname de la VM
+        rule {
+          source_labels = ["__journal__hostname"]
+          target_label  = "instance"
+        }
+
+        // Service : d'abord l'identifiant syslog
+        rule {
+          source_labels = ["__journal_syslog_identifier"]
+          regex         = "(.+)"
+          target_label  = "service_name"
+        }
+
+        // Unité systemd, prend le dessus si elle existe
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          regex         = "(.+)"
+          target_label  = "service_name"
+        }
+
+        // Niveau de log (emerg, alert, crit, err, warning, notice, info, debug)
+        rule {
+          source_labels = ["__journal_priority_keyword"]
+          regex         = "(.+)"
+          target_label  = "level"
+        }
+
+        // Réduit la cardinalité des unités transitoires (session-123.scope, run-r1a2b3.scope...)
+        rule {
+          source_labels = ["service_name"]
+          regex         = "(session-.+\\.scope|run-.+\\.scope)"
+          target_label  = "service_name"
+          replacement   = "transient-scope"
+        }
+      }
 
       loki.source.journal "host" {
         path       = "/var/log/journal"
-        forward_to = [loki.relabel.system_logs.receiver]
-      }
-
-      loki.relabel "system_logs" {
-        forward_to = [loki.write.grafana_cloud.receiver]
-        rule {
-          target_label = "job"
-          replacement  = "host-journal"
+        max_age    = "12h"
+        relabel_rules = loki.relabel.journal.rules
+        labels = {
+          job      = "host-journal",
+          hostname = env("NODE_NAME"),
         }
+        forward_to = [loki.write.grafana_cloud.receiver]
       }
 
       discovery.relabel "pod_logs" {
