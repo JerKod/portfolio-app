@@ -27,19 +27,19 @@ alloy:
       // ========== MÉTRIQUES ==========
 
       // --- node-exporter ---
-      discovery.kubernetes "pods" { role = "pod" }
+      discovery.kubernetes "pods" {
+        role = "pod"
+        selectors {
+          role  = "pod"
+          field = "spec.nodeName=" + sys.env("NODE_NAME")
+        }
+      }
 
       discovery.relabel "node_exporter" {
         targets = discovery.kubernetes.pods.targets
         rule {
           source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
           regex         = "prometheus-node-exporter"
-          action        = "keep"
-        }
-
-        rule {
-          source_labels = ["__meta_kubernetes_pod_node_name"]
-          regex         = env("NODE_NAME")
           action        = "keep"
         }
 
@@ -74,17 +74,16 @@ alloy:
       }
 
       // --- cAdvisor (via le proxy de l'API server) ---
-      discovery.kubernetes "nodes" { role = "node" }
+      discovery.kubernetes "nodes" {
+        role = "node"
+        selectors {
+          role  = "node"
+          field = "metadata.name=" + sys.env("NODE_NAME")
+        }
+      }
 
       discovery.relabel "cadvisor" {
         targets = discovery.kubernetes.nodes.targets
-
-        // Ne garder que le nœud local correspondant au pod Alloy
-        rule {
-          source_labels = ["__meta_kubernetes_node_name"]
-          regex         = env("NODE_NAME")
-          action        = "keep"
-        }
 
         // Toutes les requêtes passent par le proxy de l'API server,
         // jamais directement vers l'IP du kubelet
@@ -163,8 +162,8 @@ alloy:
         endpoint {
           url = "https://prometheus-prod-65-prod-eu-west-2.grafana.net/api/prom/push"
           basic_auth {
-            username = env("GRAFANA_CLOUD_PROM_ID")
-            password = env("GRAFANA_CLOUD_API_TOKEN")
+            username = sys.env("GRAFANA_CLOUD_PROM_ID")
+            password = sys.env("GRAFANA_CLOUD_API_TOKEN")
           }
         }
       }
@@ -216,7 +215,7 @@ alloy:
         relabel_rules = loki.relabel.journal.rules
         labels = {
           job      = "host-journal",
-          hostname = env("NODE_NAME"),
+          hostname = sys.env("NODE_NAME"),
         }
         forward_to = [loki.write.grafana_cloud.receiver]
       }
@@ -258,8 +257,8 @@ alloy:
         endpoint {
           url = "https://logs-prod-012.grafana.net/loki/api/v1/push"
           basic_auth {
-            username = env("GRAFANA_CLOUD_LOKI_ID")
-            password = env("GRAFANA_CLOUD_API_TOKEN")
+            username = sys.env("GRAFANA_CLOUD_LOKI_ID")
+            password = sys.env("GRAFANA_CLOUD_API_TOKEN")
           }
         }
       }
@@ -280,8 +279,8 @@ alloy:
       }
 
       otelcol.auth.basic "grafana_cloud" {
-        username = env("GRAFANA_CLOUD_TEMPO_ID")
-        password = env("GRAFANA_CLOUD_API_TOKEN")
+        username = sys.env("GRAFANA_CLOUD_TEMPO_ID")
+        password = sys.env("GRAFANA_CLOUD_API_TOKEN")
       }
 
   mounts:
