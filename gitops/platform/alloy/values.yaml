@@ -52,7 +52,7 @@ alloy:
       prometheus.scrape "node_exporter" {
         targets         = discovery.relabel.node_exporter.output
         job_name        = "node-exporter"
-        scrape_interval = "90s"
+        scrape_interval = "60s"
         forward_to      = [prometheus.relabel.drop_noise.receiver]
       }
 
@@ -69,7 +69,7 @@ alloy:
       prometheus.scrape "ksm" {
         targets         = discovery.relabel.ksm.output
         job_name        = "kube-state-metrics"
-        scrape_interval = "90s"
+        scrape_interval = "60s"
         forward_to      = [prometheus.relabel.drop_noise.receiver]
       }
 
@@ -112,7 +112,7 @@ alloy:
         job_name          = "cadvisor"
         scheme            = "https"
         bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-        scrape_interval   = "90s"
+        scrape_interval   = "60s"
 
         tls_config {
           ca_file     = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
@@ -155,7 +155,7 @@ alloy:
         // Nettoyage global des labels techniques inutiles
         rule {
           action = "labeldrop"
-          regex  = "uid|pod_uid|container_id|pod_ip|host_ip|id|created_by_name"
+          regex  = "uid|pod_uid|container_id|pod_ip|host_ip|id|created_by_name|name|image"
         }
       }
 
